@@ -24,7 +24,7 @@ Clone this repo and/or Paste directly the content of [install.sh](install.sh) in
 
 ## IPV4 default netplan - DHCP
 
-```sudo vi /etc/netplan/config.yml```
+```sudo vi /etc/netplan/config.yaml```
 
 
     network:
@@ -36,7 +36,7 @@ Clone this repo and/or Paste directly the content of [install.sh](install.sh) in
 
 ## IPV4 default netplan - static
 
-```sudo vi /etc/netplan/config.yml```
+```sudo vi /etc/netplan/config.yaml```
 
     network:
       version: 2
