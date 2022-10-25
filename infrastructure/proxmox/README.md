@@ -14,11 +14,13 @@ Clone this repo and/or Paste directly the content of [install.sh](install.sh) in
 
 `sudo ./install.sh`
 
-## Template prep
+# Template prep
 
     apt update && apt -y upgrade && apt -y autoremove && apt clean
     truncate -s0 /etc/hostname
     hostnamectl set-hostname localhost
+
+# Pre-ansible
 
 ## IPV4 default netplan - DHCP
 
