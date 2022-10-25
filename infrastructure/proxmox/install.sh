@@ -100,6 +100,8 @@ echo -e "alias ifconfig='/sbin/ifconfig'" >> /home/${username}/.bashrc
 echo "set nocompatible" >> /home/${username}/.vimrc
 echo "set mouse-=a" >> /home/${username}/.vimrc
 
+echo "alias nicreport='for i in /etc/pve/qemu-server/*.conf; do echo \"\$i\"|rev|cut -d \"/\" -f1|rev;cat \$i | grep ^net;echo \"\"; done'" >> /home/${username}/.bashrc
+
 /sbin/pveum user add ${username}@pam
 /sbin/pveum acl modify / --roles Administrator --users ${username}@pam
 
