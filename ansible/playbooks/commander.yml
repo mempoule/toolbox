@@ -1,6 +1,6 @@
 - hosts: mempoule_commander_adm
   roles:
-    # - role : apt
+    - role : apt
     - { role: install }
   vars:
     ruser: mempoule
