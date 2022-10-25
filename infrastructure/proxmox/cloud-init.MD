@@ -1,5 +1,7 @@
 # Cloud-init template prep
 
+Alternatively, you can just use [template_gen.sh](template_gen.sh), **don't forget it to adapt it ! and use your set of keys**
+
 ## Useful commands
 
 ```pvesm status```
@@ -27,13 +29,14 @@ Will show the exact disk location for `qm set`
 ## Cloudinit conf
 
     qm set 9000 --ide2 local:cloudinit
-    qm set -boot c -bootdisk scsi0
+    qm set 9000 --boot c -bootdisk scsi0
     qm set 9000 --boot c --bootdisk scsi0
     qm set 9000 --serial0 socket --vga serial0
     qm set 9000 --scsi0 local:9000/vm-9000-disk-0.raw,cache=writethrough,ssd=1
     qm set 9000 --ipconfig0 ip=dhcp
     qm set 9000 --ciuser poulinit
     qm set 9000 --cipassword zesecurepassword
+    qm set 9000 --agent enabled=1
     qm template 9000
     
 
@@ -42,3 +45,8 @@ Will show the exact disk location for `qm set`
 **DO NOT START THE MACHINE**
 
     qm template 9000
+
+# Template cloning into VM
+
+    qm clone 9000 500 --name datcoolname --full
+
