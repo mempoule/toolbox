@@ -157,7 +157,7 @@ cd /var/lib/vz/template/iso/
 gunzip pfSense-CE-2.6.0-RELEASE-amd64.iso.gz
 wget https://releases.ubuntu.com/focal/ubuntu-20.04.5-live-server-amd64.iso -P /var/lib/vz/template/iso/
 wget https://releases.ubuntu.com/22.04/ubuntu-22.04.1-live-server-amd64.iso -P /var/lib/vz/template/iso/
-
+wget https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img -P /var/lib/vz/template/iso/
 
 echo "Install Complete !" 1>&2
 
