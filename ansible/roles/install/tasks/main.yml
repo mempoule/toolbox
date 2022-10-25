@@ -47,7 +47,7 @@
   lineinfile:
     dest: "/home/{{ruser}}/.bashrc"
     regexp: "alias ll"
-    line: "alias ll='ls -alF"
+    line: "alias ll='ls -alF'"
     state: present
     create: true
 
