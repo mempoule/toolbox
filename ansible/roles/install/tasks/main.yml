@@ -161,6 +161,13 @@
     - python3-pip
   become: true
 
+- name: Install - systemd-networkd-wait-online disable
+  systemd:
+    name: systemd-networkd-wait-online
+    enabled: no
+    masked: yes
+  become: true
+
 - name: Install - Fail2ban - Create jail.local
   copy:
     src: /etc/fail2ban/jail.conf
