@@ -10,7 +10,7 @@ The full installation consists of 2 main steps :
 
 ### Public repo
 
-    git clone https://https://github.com/mempoule/toolbox.git`
+    git clone https://github.com/mempoule/toolbox.git
 
     sudo apt-get install ansible
 
