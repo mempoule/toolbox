@@ -54,6 +54,10 @@ Paste the content of [install.sh](install.sh) and save the file
 
     ansible-playbook --connection=local -i 127.0.0.1, playbooks/commander.yml --ask-become-pass
 
+or
+
+    ansible-playbook -i hosts/mempoule.yml playbooks/commander.yml --ask-become-pass
+
 
 
 
