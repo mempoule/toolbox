@@ -12,7 +12,7 @@ The full installation consists of 2 main steps :
 
     git clone https://github.com/mempoule/toolbox.git
 
-    sudo apt-get install ansible
+    sudo apt-get install ansible -y
 
  - Go to [Step 2](#step-2---launch-the-installation-playbook)
 
