@@ -49,5 +49,9 @@ Will show the exact disk location for `qm set`
 # Template cloning into VM
 
     qm clone 9000 500 --name datcoolname --full
+
+# Useful commands
+
     qm resize 500 scsi0 +15G
+    cat /etc/pve/qemu-server/110.conf | grep net
 
