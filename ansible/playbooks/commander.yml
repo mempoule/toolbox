@@ -4,4 +4,3 @@
     - { role: install }
   vars:
     ruser: mempoule
-    is_commander: true

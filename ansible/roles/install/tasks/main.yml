@@ -128,7 +128,7 @@
   apt_repository:
     repo: ppa:ansible/ansible
   become: true
-  when: is_commander is defined and is_commander is true
+  when: target_hostname is defined and target_hostname != "mempoule_commander_adm"
 
 - name: Install - SysTweaks - Install base packages
   apt:
@@ -206,6 +206,7 @@
     dest: "/etc/ssh/sshd_config"
     regexp: "^[#]*PubkeyAuthentication"
     line: "PubkeyAuthentication yes"
+    line: "PubkeyAuthentication yes"
     state: present
   become: true
 
@@ -271,6 +272,38 @@
     table: filter
     state: saved
     path: /etc/iptables/rules.v4
+  become: true
+
+- name: Install - SysTweaks - Hostname update
+  hostname:
+    name: "{{ target_hostname }}"
+  register: hostname_changed
+  when:
+    target_hostname is defined and target_hostname != ansible_fqdn
+  become: true
+
+- name: Install - SysTweaks - /etc/hosts update
+  lineinfile:
+    state: present
+    dest: /etc/hosts
+    line: "{{ ansible_default_ipv4.address }} {{ target_hostname }}"
+    regexp: "^{{ ansible_default_ipv4.address }}"
+  when: hostname_changed.changed
+  become: true
+
+- name: Install - SysTweaks - Reboot post Hostname Change
+  reboot:
+    reboot_timeout: 300
+  when: hostname_changed.changed and target_hostname != "mempoule_commander_adm"
+  become: true
+
+- name: Install - SysTweaks - Waiting machine restart
+  wait_for_connection:
+    connect_timeout: 60
+    sleep: 5
+    delay: 5
+    timeout: 300
+  when: hostname_changed.changed and target_hostname != "mempoule_commander_adm"
   become: true
 
 
