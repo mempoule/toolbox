@@ -912,7 +912,7 @@ Select the interface you placed the VM behind, for example LAN, or LAN2, then cl
     >
     > **IP Address** : 10.99.0.10
     > 
-    > **Hostname** : Mempoule_commander_adm
+    > **Hostname** : Mempoule-commander-adm
     > 
     > **Description** : Mempoule Commander Adm
     >
