@@ -1,0 +1,4 @@
+- name: "APT.autoremove - remove unused packages"
+  apt:
+    autoremove: yes
+  become: true

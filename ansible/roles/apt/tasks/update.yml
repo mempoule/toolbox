@@ -1,0 +1,4 @@
+- name: "APT.update - update all packages"
+  apt:
+    update_cache: yes
+  become: true

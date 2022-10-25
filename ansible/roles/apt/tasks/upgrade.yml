@@ -1,0 +1,8 @@
+- name: "APT.upgrade - Upgrade all packages"
+  apt:
+    upgrade: full
+  register: apt_status
+  until: apt_status is success
+  delay: 20
+  retries: 12
+  become: true

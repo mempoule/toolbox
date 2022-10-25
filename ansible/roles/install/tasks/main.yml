@@ -1,0 +1,286 @@
+- include_vars:
+    file: "vars.json"
+    name: var_install
+
+- name: "Install - AdministrativeUser - Check if {{ruser}} is in passwd"
+  getent:
+    database: passwd
+    key: "{{ruser}}"
+
+- name: "Install - AdministrativeUser - Set user_exist var when {{ ruser }} exists"
+  set_fact:
+    user_exists: true
+  when: (ruser in item.key)
+  loop: "{{ ansible_facts.getent_passwd | dict2items }}"
+
+- name: "Install - AdministrativeUser - Set user_exist var when {{ ruser }} exists"
+  set_fact:
+    user_exists: false
+  when: (ruser not in item.key)
+  loop: "{{ ansible_facts.getent_passwd | dict2items }}"
+
+- name: "Install - AdministrativeUser - Add user {{ ruser }}"
+  user:
+    name: "{{ ruser }}"
+    shell: /bin/bash
+    groups: sudo
+    password: "{{ var_install['default_pass'] }}"
+  become: true
+  when:
+    - user_exists is false
+
+- name: Install - AdministrativeUser - .vimrc compatible mode and mouse
+  lineinfile:
+    dest: "/home/{{ruser}}/.vimrc"
+    line: "set nocompatible"
+    state: present
+    create: true
+
+- name: Install - AdministrativeUser - .vimrc compatible mode and mouse
+  lineinfile:
+    dest: "/home/{{ruser}}/.vimrc"
+    line: "set mouse-=a"
+    state: present
+    create: true
+
+- name: Install - AdministrativeUser - ll alias in .bashrc
+  lineinfile:
+    dest: "/home/{{ruser}}/.bashrc"
+    regexp: "alias ll"
+    line: "alias ll='ls -alF"
+    state: present
+    create: true
+
+- name: Install - AdministrativeUser - Default editor
+  lineinfile:
+    dest: "/home/{{ruser}}/.bashrc"
+    regexp: "export EDITOR="
+    line: "export EDITOR=vim"
+    state: present
+    create: true
+
+- name: Install - AdministrativeUser - Create .ssh folder
+  file:
+    path: "/home/{{ ruser }}/.ssh"
+    state: directory
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+    mode: '0700'
+  become: true
+
+- name: Install - AdministrativeUser - Get ssh keys from GitHub
+  uri:
+    url: "https://api.github.com/users/{{ ruser }}/keys"
+    method: GET
+    return_content: yes
+  register: ghkeys
+
+- name: Install - AdministrativeUser - touch authorized_keys
+  copy:
+    content: ""
+    dest: "/home/{{ruser}}/.ssh/authorized_keys"
+    force: no
+    group: mempoule
+    owner: mempoule
+    mode: 0600
+
+- name: "Base - Add {{ ruser }} GitHub ssh keys"
+  lineinfile:
+    path: "/home/{{ ruser }}/.ssh/authorized_keys"
+    state: present
+    line: "{{ item.key }}\n"
+    create: true
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+  when: item.key not in lookup('ansible.builtin.file', '/home/'+ruser+'/.ssh/authorized_keys')
+  with_items: "{{ ghkeys.content }}"
+  become: true
+
+- name: Install - AdministrativeUser - Ensure GitHub host key known
+  lineinfile:
+    dest: "/home/{{ ruser }}/.ssh/known_hosts"
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -trsa github.com') }}"
+    create: true
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+  become: true
+
+- name: Install - AdministrativeUser - chmod .ssh/authorized_keys
+  file:
+    path:  "/home/{{ ruser }}/.ssh/authorized_keys"
+    mode: '0600'
+  become: true
+
+- name: Install - SysTweaks - Disable IPv6 with sysctl
+  sysctl:
+    name: "{{ item }}"
+    value: '1'
+    state: present
+    reload: true
+  with_items:
+    - net.ipv6.conf.all.disable_ipv6
+    - net.ipv6.conf.default.disable_ipv6
+    - net.ipv6.conf.lo.disable_ipv6
+  become: true
+
+- name: Install - SysTweaks - Add Ansible repository into sources list
+  apt_repository:
+    repo: ppa:ansible/ansible
+  become: true
+  when: is_commander is defined and is_commander is true
+
+- name: Install - SysTweaks - Install base packages
+  apt:
+    pkg:
+    - net-tools
+    - software-properties-common
+    - pkg-config
+    - libssl-dev
+    - jq
+    - git
+    - htop
+    - ntp
+    - ntpdate
+    - vim
+    - fail2ban
+    - bc
+    - autoconf
+    - automake
+    - cmake
+    - bsdmainutils
+    - debconf-utils
+    - curl
+    - unzip
+    - wget
+    - clang
+    - iptables-persistent
+    - screen
+    - python3
+    - python3-dev
+    - python3-pip
+  become: true
+
+- name: Install - Fail2ban - Create jail.local
+  copy:
+    src: /etc/fail2ban/jail.conf
+    dest: /etc/fail2ban/jail.local
+    remote_src: true
+  become: true
+
+- name: Install - Fail2ban - Comment contents of jail.conf in jail.local
+  replace:
+    path: /etc/fail2ban/jail.local
+    regexp: '(.*)'
+    replace: '# \1'
+  become: true
+
+- name: Install - Fail2ban - Extend whitelist for fail2ban
+  community.general.ini_file:
+    dest: /etc/fail2ban/jail.conf
+    section: DEFAULT
+    option: ignoreip
+    value: "{{var_install['fail2ban_ignorelist_str']}}"
+    mode: '0640'
+    create: yes
+  become: true
+
+- name: Install - SSHD - PermitRootLogin
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^[#]*PermitRootLogin"
+    line: "PermitRootLogin no"
+    state: present
+  become: true
+
+- name: Install - SSHD - PasswordAuthentication
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^[#]*PasswordAuthentication"
+    line: "PasswordAuthentication no"
+    state: present
+  become: true
+
+- name: Install - SSHD - PubkeyAuthentication
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^[#]*PubkeyAuthentication"
+    line: "PubkeyAuthentication yes"
+    state: present
+  become: true
+
+- name: Install - SSHD - ChallengeResponseAuthentication
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^[#]*ChallengeResponseAuthentication"
+    line: "ChallengeResponseAuthentication no"
+    state: present
+  become: true
+
+- name: Install - Iptables - Set the policy for the INPUT chain to ACCEPT
+  iptables:
+    chain: INPUT
+    policy: ACCEPT
+  become: true
+
+- name: Install - Iptables - Set the policy for the FORWARD chain to ACCEPT
+  iptables:
+    chain: FORWARD
+    policy: ACCEPT
+  become: true
+
+- name: Install - Iptables - Set the policy for the OUTPUT chain to ACCEPT
+  iptables:
+    chain: OUTPUT
+    policy: ACCEPT
+  become: true
+
+- name: Install - Iptables - Allow related and established connections
+  iptables:
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: true
+
+- name: Install - Iptables - Allow lo
+  iptables:
+    chain: INPUT
+    in_interface: lo
+    jump: ACCEPT
+  become: true
+
+- name: Install - Iptables - SSH whitelist
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: '22'
+    source: "{{item}}"
+    jump: ACCEPT
+  loop: "{{var_install['iptables_allowed_ssh']}}"
+  become: true
+
+- name: Install - Iptables - Deny else
+  iptables:
+    chain: INPUT
+    jump: DROP
+  become: true
+
+- name: Install - Iptables - Save rules
+  community.general.iptables_state:
+    ip_version: ipv4
+    table: filter
+    state: saved
+    path: /etc/iptables/rules.v4
+  become: true
+
+- name: Install - Services Restart - Restart fail2ban
+  service:
+    name: fail2ban
+    state: restarted
+  become: true
+
+- name: Install - Services Restart - Stop and Start ssh
+  service:
+    name: ssh
+    state: restarted
+  become: true
