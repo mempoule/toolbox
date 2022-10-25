@@ -28,6 +28,8 @@ then
          pass=$(perl -e 'print crypt($ARGV[0], "password")' ${password})
          useradd -m -p ${pass} ${username} --shell /bin/bash
          usermod -aG sudo ${username}
+         # prereq for nic reporting
+         usermod -a -G www-data ${username}
       else
          echo "Must provide a valid user / password" 1>&2
          exit
