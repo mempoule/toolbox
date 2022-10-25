@@ -10,7 +10,9 @@ The full installation consists of 2 main steps :
 
 ### Public repo
 
- - `git clone https://https://github.com/mempoule/toolbox.git`
+    git clone https://https://github.com/mempoule/toolbox.git`
+
+    sudo apt-get install ansible
 
  - Go to [Step 2](#step-2---launch-the-installation-playbook)
 
@@ -47,6 +49,8 @@ Paste the content of [install.sh](install.sh) and save the file
     echo "Theultrasecurepassword" > ~/.vault_pass
 
 #### Launch the playbook
+
+    cd ~/toolbox/ansible
 
     ansible-playbook --connection=local -i 127.0.0.1, playbooks/commander.yml --ask-become-pass
 
