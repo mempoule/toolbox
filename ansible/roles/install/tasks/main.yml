@@ -213,7 +213,6 @@
     dest: "/etc/ssh/sshd_config"
     regexp: "^[#]*PubkeyAuthentication"
     line: "PubkeyAuthentication yes"
-    line: "PubkeyAuthentication yes"
     state: present
   become: true
 
