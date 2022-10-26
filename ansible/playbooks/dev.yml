@@ -1,0 +1,5 @@
+- hosts: mempoule_rev_adm
+  roles:
+    - role: dev
+  vars:
+    ruser: mempoule
