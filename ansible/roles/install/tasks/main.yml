@@ -299,24 +299,28 @@
 
 - name: Install - Ansible - Get GPG key
   shell: gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/ansible.gpg --keyserver keyserver.ubuntu.com --recv-keys 93c4a3fd7bb9c367
+  become: true
 
 - name: Install - Ansible - Create the ansible.list - 22-JAMMY
   lineinfile:
       path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
       line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu jammy main'
   when: is_commander is defined and is_commander and ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+  become: true
 
 - name: Install - Ansible - Create the ansible.list - 20-JAMMY
   lineinfile:
       path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
       line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu focal main'
   when: is_commander is defined and is_commander ansible_distribution == 'Ubuntu' and ansible_distribution_version == '20.04'
+  become: true
 
 - name: Install - Ansible - Create the ansible.list - 20-JAMMY
   lineinfile:
       path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
       line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu bionic main'
   when: is_commander is defined and is_commander ansible_distribution == 'Ubuntu' and ansible_distribution_version == '18.04'
+  become: true
 
 - name: Install - SysTweaks - Hostname update
   hostname:
