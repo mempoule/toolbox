@@ -308,8 +308,7 @@
   hostname:
     name: "{{ target_hostname }}"
   register: hostname_changed
-  when:
-    target_hostname is defined and target_hostname != ansible_fqdn
+  when: target_hostname is defined and target_hostname != ansible_fqdn
   become: true
 
 - name: Install - SysTweaks - /etc/hosts update existing entry
@@ -327,7 +326,7 @@
     state: present
     dest: /etc/hosts
     line: "{{ ansible_default_ipv4.address }} {{ target_hostname }}"
-  when: not hostname_already_present.changed
+  when: not hostname_already_present.changed or
   become: true
 
 - name: Install - SysTweaks - Reboot post Hostname Change
