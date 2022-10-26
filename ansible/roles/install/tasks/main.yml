@@ -303,22 +303,28 @@
 
 - name: Install - Ansible - Create the ansible.list - 22-JAMMY
   lineinfile:
-      path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
-      line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu jammy main'
+    state: present
+    path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
+    line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu jammy main'
+    create: true
   when: is_commander is defined and is_commander and ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
   become: true
 
-- name: Install - Ansible - Create the ansible.list - 20-JAMMY
+- name: Install - Ansible - Create the ansible.list - 20-FOCAL
   lineinfile:
-      path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
-      line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu focal main'
+    state: present
+    path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
+    line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu focal main'
+    create: true
   when: is_commander is defined and is_commander ansible_distribution == 'Ubuntu' and ansible_distribution_version == '20.04'
   become: true
 
-- name: Install - Ansible - Create the ansible.list - 20-JAMMY
+- name: Install - Ansible - Create the ansible.list - 20-BIONIC
   lineinfile:
-      path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
-      line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu bionic main'
+    state: present
+    path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
+    line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu bionic main'
+    create: true
   when: is_commander is defined and is_commander ansible_distribution == 'Ubuntu' and ansible_distribution_version == '18.04'
   become: true
 
