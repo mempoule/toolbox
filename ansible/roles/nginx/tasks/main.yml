@@ -39,6 +39,7 @@
   when: fw_cloudflare is defined and fw_cloudflare
   become: true
 
+
 - name: nginx - Firewall - Cloudflare - Port 80
   iptables:
     chain: INPUT
