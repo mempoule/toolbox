@@ -102,6 +102,8 @@ The nginx_private uses a main directory, which should be located on the home dir
 
 > **Info :** An ultra basic version will be shown under each file to ease understanding, **DO NOT use it in production**
 
+**Mandatory Files :** 
+
  - **virtualhost.conf** : 
 
         server {
@@ -116,6 +118,11 @@ The nginx_private uses a main directory, which should be located on the home dir
                         try_files $uri $uri/ =404;
                 }
         }
+   
+ - **files.tar.gz :** The full folder of your website.
+
+
+**Optional files :**
 
  - **certificate.crt** :
     
@@ -127,26 +134,30 @@ The nginx_private uses a main directory, which should be located on the home dir
     
     **In case your domain is behind cloudflare, please use [project_cloudflare_originCA](####project_cloudflare_originCA)**
 
-        -----BEGIN CERTIFICATE-----
-        MIIDazCCAlOgAwIBAgIUfilgrwj+5dDJxoNNobH2rtGp8Y4wDQYJKoZIhvcNAQEL
-        BQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM
-        uyum6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0f8fogyurAPh5bZeN28r7
-        drfKBiTA8Wv7i53qbR2hlApvfS/xe4H9PmFYhNKeolWWw82jmax/3hWFwnCgWZxu
-        4Sa+Nh+PAbNS2U/CeQFb
-        -----END CERTIFICATE-----
+       -----BEGIN CERTIFICATE-----
+       MIIDazCCAlOgAwIBAgIUfilgrwj+5dDJxoNNobH2rtGp8Y4wDQYJKoZIhvcNAQEL
+       BQAwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoM
+       uyum6FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0f8fogyurAPh5bZeN28r7
+       drfKBiTA8Wv7i53qbR2hlApvfS/xe4H9PmFYhNKeolWWw82jmax/3hWFwnCgWZxu
+       4Sa+Nh+PAbNS2U/CeQFb
+       -----END CERTIFICATE-----
 
  - **certificate.key** :
 
-        -----BEGIN PRIVATE KEY-----
-        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDWbp6cORw8OZ9W
-        xscMPEOMgFm4yG7UsodBO1OMsx5TdlbN9UvTJsRDhki7a81IRdGUBvMKjztbEPpX
-        0W/vHQ+HCRFPLQMhalCFGBaO7M/r5epXfzeMsMrj9x/ob34p0PnvdRsYieQUKpY+
-        wcPr0+DPVHTKCbbA9QVDkr1LbwTpQQACKQrbW/3A+vHPr8TMx3HZFtLu0Nf0PhAJ
-        RbcBqVG1AWY6gA7tdtpEXpY=
-        -----END PRIVATE KEY-----
+       -----BEGIN PRIVATE KEY-----
+       MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDWbp6cORw8OZ9W
+       xscMPEOMgFm4yG7UsodBO1OMsx5TdlbN9UvTJsRDhki7a81IRdGUBvMKjztbEPpX
+       0W/vHQ+HCRFPLQMhalCFGBaO7M/r5epXfzeMsMrj9x/ob34p0PnvdRsYieQUKpY+
+       wcPr0+DPVHTKCbbA9QVDkr1LbwTpQQACKQrbW/3A+vHPr8TMx3HZFtLu0Nf0PhAJ
+       RbcBqVG1AWY6gA7tdtpEXpY=
+       -----END PRIVATE KEY-----
 
  - **api_keys.conf :**
     
-        "PQ1G8SfZBB8Jq/H6LMxAQVO" "mempoule_user"
+       "PQ1G8SDDSQDq/H6LMxAQVO" "mempoule_user"
 
- - **files.tar.gz :** The full folder of your website.
+ - **htpasswd.conf :**
+    
+       user1:$apr1$/woDSQDDDQSDQSdsqDSeSMjTtn0E9Q0
+       user2:$apr1$QdR8fNLDDSDSQDQSDQSDQSDDNpSoBh/
+       user3:$apr1$Mr.DSKLKMLj39Hp5FfxRkneklXaMrr/
