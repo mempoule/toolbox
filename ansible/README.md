@@ -100,6 +100,16 @@ The nginx_private uses a main directory, which should be located on the home dir
 
 #### Place the config files :
 
+```
+.
+├── ./api_keys.conf
+├── ./certificate.crt
+├── ./certificate.key
+├── ./files.tar.gz
+├── ./htpasswd.conf
+└── ./virtualhost.conf
+```
+
 > **Info :** An ultra basic version will be shown under each file to ease understanding, **DO NOT use it in production**
 
 **Mandatory Files :** 
