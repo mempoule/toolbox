@@ -2,5 +2,6 @@
   roles:
     - role: apt
     - role: install
+    - role: nginx
   vars:
     ruser: mempoule
