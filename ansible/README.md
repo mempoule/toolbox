@@ -79,36 +79,38 @@ To avoid having variables everywhere, they will be declared here, and used direc
 
 ---
 
+## Private folder
+
+For obvious reasons, when configuring a website, an app, or anything with customer/sensitive info, you don't want to have it published on git. This part will explain how the nginx_private role works, and how to autodeploy when you have all the files needed. It will simplify the nginx configuration, and make the deployment available relatively easy / fast.
+
+#### Initialize the directory : 
+
+    mkdir ~/mempoule_private
+
+#### Create your project folder :
+
+    mkdir ~/mempoule_private/<project_name>
+
+#### Example of the directory tree : 
+
+```
+mempoule_private
+└── mempoule.tld
+    └── nginx
+        ├── api_keys.conf
+        ├── certificate.crt
+        ├── certificate.key
+        ├── files.tar.gz
+        ├── htpasswd.conf
+        └── virtualhost.conf
+```
 
 
 ## Specific Roles
 
 ### nginx_private
 
-For obvious reasons, when configuring a website, be it an internal one, or a customer's one, you don't want to have it published on git. This part will explain how the nginx_private role works, and how to autodeploy when you have all the files needed. It will simplify the nginx configuration, and make the website available relatively easily / fast.
-
-The nginx_private uses a main directory, which should be located on the home directory of your commander's machine : `~/mempoule_websites`
-
-#### Initialize the directory : 
-
-    cd
-    mkdir mempoule_websites
-
-#### Create your project folder :
-
-    mkdir ~/mempoule_websites/mempoule.wtf
-
-#### Place the config files :
-
-```
-.
-├── ./api_keys.conf
-├── ./certificate.crt
-├── ./certificate.key
-├── ./files.tar.gz
-├── ./htpasswd.conf
-└── ./virtualhost.conf
-```
+#### Place the config files in the private nginx folder on the commander : `/home/<commander_user>/<project_name>/nginx`
 
 > **Info :** An ultra basic version will be shown under each file to ease understanding, **DO NOT use it in production**
 
