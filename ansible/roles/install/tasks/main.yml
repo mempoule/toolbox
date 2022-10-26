@@ -43,6 +43,13 @@
     state: present
     create: true
 
+- name: Install - AdministrativeUser - .vimrc Comment Color
+  lineinfile:
+    dest: "/home/{{ruser}}/.vimrc"
+    line: "hi Comment ctermfg=darkgreen"
+    state: present
+    create: true
+
 - name: Install - AdministrativeUser - ll alias in .bashrc
   lineinfile:
     dest: "/home/{{ruser}}/.bashrc"
