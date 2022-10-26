@@ -13,7 +13,7 @@
   when: (ruser in item.key)
   loop: "{{ ansible_facts.getent_passwd | dict2items }}"
 
-- name: "Install - AdministrativeUser - Set user_exist var when {{ ruser }} exists"
+- name: "Install - AdministrativeUser - Set user_exist var when {{ ruser }} doesn't exist"
   set_fact:
     user_exists: false
   when: (ruser not in item.key)
@@ -128,7 +128,7 @@
   apt_repository:
     repo: ppa:ansible/ansible
   become: true
-  when: target_hostname is defined and target_hostname != "mempoule_commander_adm"
+  when: is_commander is defined
 
 - name: Install - SysTweaks - Install base packages
   apt:
@@ -300,7 +300,7 @@
 - name: Install - SysTweaks - Reboot post Hostname Change
   reboot:
     reboot_timeout: 300
-  when: hostname_changed.changed and target_hostname != "mempoule_commander_adm"
+  when: hostname_changed.changed and is_commander is not defined
   become: true
 
 - name: Install - SysTweaks - Waiting machine restart
@@ -309,7 +309,7 @@
     sleep: 5
     delay: 5
     timeout: 300
-  when: hostname_changed.changed and target_hostname != "mempoule_commander_adm"
+  when: hostname_changed.changed and is_commander is not defined
   become: true
 
 

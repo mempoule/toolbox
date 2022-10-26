@@ -6,4 +6,4 @@
   delay: 20
   retries: 12
   become: true
-  when: target_hostname != "mempoule_commander_adm"
+  when: is_commander is not defined
