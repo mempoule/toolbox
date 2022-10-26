@@ -288,14 +288,24 @@
     target_hostname is defined and target_hostname != ansible_fqdn
   become: true
 
-- name: Install - SysTweaks - /etc/hosts update
+- name: Install - SysTweaks - /etc/hosts update existing entry
   lineinfile:
     state: present
     dest: /etc/hosts
     line: "{{ ansible_default_ipv4.address }} {{ target_hostname }}"
     regexp: "^{{ ansible_default_ipv4.address }}"
+  register: hostname_already_present
   when: hostname_changed.changed
   become: true
+
+- name: Install - SysTweaks - /etc/hosts add the entry if not present
+  lineinfile:
+    state: present
+    dest: /etc/hosts
+    line: "{{ ansible_default_ipv4.address }} {{ target_hostname }}"
+  when: not hostname_already_present.changed
+  become: true
+
 
 - name: Install - SysTweaks - Reboot post Hostname Change
   reboot:
