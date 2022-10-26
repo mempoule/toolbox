@@ -131,6 +131,7 @@
   register: grub_ipv6_ubuntu20
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '20'
 
+
 - name: Install - SysTweaks - IPV6 disable for ubuntu20.x - append to GRUB_CMDLINE_LINUX_DEFAULT
   lineinfile:
     path: /etc/default/grub
@@ -138,12 +139,13 @@
     regexp: '(^GRUB_CMDLINE_LINUX_DEFAULT=.*).{1}'
     line: '\1 ipv6.disable=1"'
   become: true
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '20' and grub_ipv6_ubuntu20.rc == 1
+  when: grub_ipv6_ubuntu20.rc | default('') == 1
+
 
 - name:  Install - SysTweaks - IPV6 disable for ubuntu20.x - grub update
   shell: update-grub
   become: true
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '20' and grub_ipv6_ubuntu20.rc == 1
+  when: grub_ipv6_ubuntu20.rc | default('') == 1
 
 
 - name: Install - SysTweaks - Add Ansible repository into sources list
