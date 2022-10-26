@@ -13,7 +13,7 @@
     action: insert
     rule_num: "1"
   become: true
-  when: fw_nohttp is not defined or (fw_nohttp is defined and fw_nohttp)
+  when: fw_nohttp is not defined or (fw_nohttp is defined and not fw_nohttp)
 
 - name: nginx - Firewall - Port 443
   iptables:
@@ -24,7 +24,22 @@
     action: insert
     rule_num: "1"
   become: true
-  when: fw_nohttps is not defined or (fw_nohttps is defined and fw_nohttps)
+  when: fw_nohttps is not defined or (fw_nohttps is defined and not fw_nohttps)
+
+- name: nginx - Firewall - Cloudflare - Port 80
+  iptables:
+    chain: INPUT
+    protocol: tcp
+    source: "{{ item }}"
+    destination_port: '80'
+    jump: ACCEPT
+    action: insert
+    rule_num: "1"
+  with_items: "{{ cloudflarev4.splitlines() }}"
+  vars:
+    cloudflarev4: "{{ lookup('file', 'vars/cloudflarev4.cfg') }}"
+  become: true
+  when: fw_cloudflare is defined and not fw_cloudflare
 
 - name: nginx - Firewall - Cloudflare - Port 443
   iptables:
@@ -35,20 +50,8 @@
     jump: ACCEPT
     action: insert
     rule_num: "1"
-  with_lines: cat vars/cloudflarev4.cfg
-  when: fw_cloudflare is defined and fw_cloudflare
+  with_items: "{{ cloudflarev4.splitlines() }}"
+  vars:
+    cloudflarev4: "{{ lookup('file', 'vars/cloudflarev4.cfg') }}"
   become: true
-
-
-- name: nginx - Firewall - Cloudflare - Port 80
-  iptables:
-    chain: INPUT
-    protocol: tcp
-    source: "{{ item }}"
-    destination_port: '443'
-    jump: ACCEPT
-    action: insert
-    rule_num: "1"
-  with_lines: cat vars/cloudflarev4.cfg
-  when: fw_cloudflare is defined and fw_cloudflare
-  become: true
+  when: fw_cloudflare is defined and not fw_cloudflare
