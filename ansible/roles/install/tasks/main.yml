@@ -304,19 +304,19 @@
   lineinfile:
       path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
       line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu jammy main'
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+  when: is_commander is defined and is_commander and ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
 
 - name: Install - Ansible - Create the ansible.list - 20-JAMMY
   lineinfile:
       path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
       line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu focal main'
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '20.04'
+  when: is_commander is defined and is_commander ansible_distribution == 'Ubuntu' and ansible_distribution_version == '20.04'
 
 - name: Install - Ansible - Create the ansible.list - 20-JAMMY
   lineinfile:
       path: /etc/apt/sources.list.d/ppa_ansible_ansible.list
       line: 'deb [arch=amd64 signed-by=/usr/share/keyrings/ansible.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu bionic main'
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '18.04'
+  when: is_commander is defined and is_commander ansible_distribution == 'Ubuntu' and ansible_distribution_version == '18.04'
 
 - name: Install - SysTweaks - Hostname update
   hostname:
