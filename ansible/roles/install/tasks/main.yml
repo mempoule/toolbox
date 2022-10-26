@@ -124,6 +124,27 @@
     - net.ipv6.conf.lo.disable_ipv6
   become: true
 
+- name: Install - SysTweaks - IPV6 disable for ubuntu20.x - checking if already in grub conf
+  shell: grep -i '^GRUB_CMDLINE_LINUX_DEFAULT=.*.ipv6\.disable=1.*' /etc/default/grub
+  failed_when: "grub_ipv6_ubuntu20.rc not in [ 0, 1 ]"
+  register: grub_ipv6_ubuntu20
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version == '20'
+
+- name: Install - SysTweaks - IPV6 disable for ubuntu20.x - append to GRUB_CMDLINE_LINUX_DEFAULT
+  lineinfile:
+    path: /etc/default/grub
+    backrefs: yes
+    regexp: '(^GRUB_CMDLINE_LINUX_DEFAULT=.*).{1}'
+    line: '\1 ipv6.disable=1"'
+  become: true
+  when: grub_ipv6_ubuntu20 is defined and grub_ipv6_ubuntu20.rc == 1
+
+- name:  Install - SysTweaks - IPV6 disable for ubuntu20.x - grub update
+  shell: update-grub
+  become: true
+  when: grub_ipv6_ubuntu20 is defined and grub_ipv6_ubuntu20.rc == 1
+
+
 - name: Install - SysTweaks - Add Ansible repository into sources list
   apt_repository:
     repo: ppa:ansible/ansible
@@ -305,7 +326,6 @@
     line: "{{ ansible_default_ipv4.address }} {{ target_hostname }}"
   when: not hostname_already_present.changed
   become: true
-
 
 - name: Install - SysTweaks - Reboot post Hostname Change
   reboot:
