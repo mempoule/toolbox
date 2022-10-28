@@ -64,17 +64,42 @@
     path: /etc/iptables/rules.v4
   become: true
 
-- name: nginx - wwwfiles - Cleaning base directory - Get list
+- name: nginx - wwwfiles - Cleaning base directory - Get list - var
   find:
     paths: /var/www/html
     patterns: "*.html"
   register: wwwfiles_to_delete
 
-- name: nginx - wwwfiles - Cleaning base directory - Delete it
+- name: nginx - wwwfiles - Cleaning base directory - Delete it - var
   file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ wwwfiles_to_delete.files }}"
+  become: true
+
+- name: nginx - wwwfiles - Cleaning base directory - Get list - usr
+  find:
+    paths: /usr/share/nginx/html
+    patterns: "*.html"
+  register: usrfiles_to_delete
+
+- name: nginx - wwwfiles - Cleaning base directory - Delete it - usr
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ usrfiles_to_delete.files }}"
+  become: true
+
+- name: nginx - nginxTweaks - remove default virtualhost - sa
+  file:
+    path: "/etc/nginx/sites-available/default"
+    state: absent
+  become: true
+
+- name: nginx - nginxTweaks - remove default virtualhost - se
+  file:
+    path: "/etc/nginx/sites-enabled/default"
+    state: absent
   become: true
 
 - name: nginx - nginxTweaks - Server tokens off
@@ -126,6 +151,12 @@
             location @503 { return 503 '{"status":503,"message":"Service Unavailable"}\n'; }
     create: yes
   become: true
+
+- name: nginx - nginxTweaks - Adding user {{ ruser }} to www-data group
+  user:
+    name: "{{ ruser }}"
+    groups: www-data
+    append: true
 
 - name: nginx - Restart daemon
   service:

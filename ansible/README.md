@@ -79,9 +79,30 @@ To avoid having variables everywhere, they will be declared here, and used direc
 
 ---
 
+#### force_virtualhost
+**Type** : bool
+
+**Roles** : nginx_private
+
+*Description: forces override in case there is already a virtualhost for this project*
+
+---
+
+#### force_wwwfiles
+**Type** : bool
+
+**Roles** : nginx_private
+
+*Description: forces override in case there are already wwwfiles in the folder*
+
+---
+
+
 ## Private folder
 
 For obvious reasons, when configuring a website, an app, or anything with customer/sensitive info, you don't want to have it published on git. This part will explain how the nginx_private role works, and how to autodeploy when you have all the files needed. It will simplify the nginx configuration, and make the deployment available relatively easy / fast.
+
+**Warning :** this is NOT intended to be a solution for delegated hosting, that's absolutely not the purpose, here we will keep the whole control over infrastructure / files, the goal is to be able to be fast during the developpement / presentation process. Hosting is nor our job ;)
 
 #### Initialize the directory : 
 
