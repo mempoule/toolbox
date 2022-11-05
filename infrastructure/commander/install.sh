@@ -83,4 +83,4 @@ echo "Commander private repo bash script start" 1>&2
     fi
   done
 
-  sudo -u ${SUDO_USER} git clone git@github.com:mempoule/toolbox_private.git
+  sudo -u ${SUDO_USER} git clone git@github.com:mempoule/toolbox_private.git ~/toolbox_private
