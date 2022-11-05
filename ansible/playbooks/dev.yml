@@ -1,5 +1,5 @@
 - hosts: mempoule_rev_adm
   roles:
-    - role: dev
+    - role: nginx_private
   vars:
     ruser: mempoule

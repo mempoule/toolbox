@@ -1,3 +1,8 @@
+- name: "nginx_private - ENDPLAY: project_name"
+  meta: end_play
+  when:
+  - not project_name is defined
+
 - name: "nginx_private - {{ project_name }} - Define path depending on reverse or direct"
   set_fact:
       effective_path: "{{ '/home/{{ruser}}/toolbox_private/nginx/{{reverse_name}}/{{ project_name }}' if reverse_name is defined and reverse_name else '/home/{{ruser}}/toolbox_private/nginx/{{ project_name }}' }}"
@@ -18,7 +23,7 @@
 - name: "nginx_private - ENDPLAY: projectdir"
   meta: end_play
   when:
-  - (project_name is defined and not local_projectdir.stat.exists) or not project_name is defined
+  - project_name is defined and not local_projectdir.stat.exists
 
 
 # virtualhost.conf
@@ -38,25 +43,6 @@
   when:
   - not local_virtualconf.stat.exists
   - not remote_virtualconf.stat.exists
-
-- name: "nginx_private - {{ project_name }} - Create files folder"
-  file:
-    path: "/usr/share/nginx/{{ project_name }}"
-    state: directory
-    owner: "{{ ruser }}"
-    group: "{{ ruser }}"
-    mode: '0750'
-  become: true
-  when: reverse_name is not defined or not reverse_name
-
-- name: "nginx_private - {{ project_name }} - Create certificates folder"
-  file:
-    path: "/etc/ssl/certs/{{ project_name }}"
-    state: directory
-    owner: root
-    group: root
-    mode: '0644'
-  become: true
 
 - name: "nginx_private - {{ project_name }} - virtualhost.conf - Copy"
   copy:
@@ -92,11 +78,23 @@
     copy_virtualconf_force is defined and 'skipped' not in copy_virtualconf_force
 
 # wwwfiles
+
+- name: "nginx_private - {{ project_name }} - wwwfiles - Create folder"
+  file:
+    path: "/usr/share/nginx/{{ project_name }}"
+    state: directory
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+    mode: '0750'
+  become: true
+  when: reverse_name is not defined or not reverse_name
+
 - name: "nginx_private - {{ project_name }} - wwwfiles - Check LOCAL"
   stat:
     path: "{{ effective_path }}/files.tar.gz"
   register: local_wwwfiles
   delegate_to: localhost
+  when: reverse_name is not defined or not reverse_name
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - Copy"
   copy:
@@ -108,7 +106,10 @@
     force: false
   become: true
   register: copy_wwwfiles_noforce
-  when: local_wwwfiles.stat.exists
+  when:
+  - reverse_name is not defined or not reverse_name
+  - local_wwwfiles.stat.exists
+
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - Copy FORCEMODE"
   copy:
@@ -120,7 +121,9 @@
     force: true
   become: true
   register: copy_wwwfiles_force
-  when: local_wwwfiles.stat.exists and force_wwwfiles is defined and force_wwwfiles
+  when:
+  - reverse_name is not defined or not reverse_name
+  - local_wwwfiles.stat.exists and force_wwwfiles is defined and force_wwwfiles
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - unarchive"
   unarchive:
@@ -130,6 +133,7 @@
   become: true
   register: unarchive_operation
   when:
+  - reverse_name is not defined or not reverse_name
   - copy_wwwfiles_noforce is defined and 'skipped' not in copy_wwwfiles_noforce or
     copy_wwwfiles_force is defined and 'skipped' not in copy_wwwfiles_force
 
@@ -138,6 +142,7 @@
     path:  "/usr/share/nginx/{{ project_name }}/files.tar.gz"
     state: absent
   become: true
+  when: reverse_name is not defined or not reverse_name
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - acl"
   file:
@@ -147,8 +152,18 @@
     group: "{{ ruser }}"
     mode: u=rwX,g=rX,o=
   become: true
+  when: reverse_name is not defined or not reverse_name
 
 # certificates
+
+- name: "nginx_private - {{ project_name }} - certificates - Create folder"
+  file:
+    path: "/etc/ssl/certs/{{ project_name }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwX,g=rX,o=rX
+  become: true
 
 - name: "nginx_private - {{ project_name }} - certificate.crt - Check LOCAL"
   stat:
