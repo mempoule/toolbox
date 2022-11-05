@@ -15,6 +15,7 @@
 
 ### Install Ansible
 
+    sudo apt-get update
     sudo apt-get install ansible -y
 
 ### Clone private version (optional)

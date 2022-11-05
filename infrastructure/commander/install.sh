@@ -22,7 +22,8 @@ echo "Commander private repo bash script start" 1>&2
       echo "Must provide a valid password" 1>&2
       exit
   fi
-  ssh-keygen -f /home/${SUDO_USER}/.ssh/commander -q -o -N ${gitpassword} -a 255 -t ed25519 -C "mail_placeholder" <<<y
+
+  ssh-keygen -f /home/${SUDO_USER}/.ssh/commander -q -o -N ${gitpassword} -a 255 -t ed25519 <<<y
   chmod 600 /home/${SUDO_USER}/.ssh/commander
   commander_pub=$(cat /home/${SUDO_USER}/.ssh/commander.pub)
   echo -e "" 1>&2
