@@ -33,12 +33,7 @@
 #### Launch the playbook
 
     cd ~/toolbox/ansible
-    ansible-playbook --connection=local -i 127.0.0.1, playbooks/commander.yml -K
-
-or
-
-    cd ~/toolbox/ansible
-    ansible-playbook -i hosts/mempoule.yml playbooks/commander.yml --ask-become-pass
+    ansible-playbook -i hosts/mempoule.yml playbooks/commander.yml -K
 
 
 
