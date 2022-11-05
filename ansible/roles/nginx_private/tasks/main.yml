@@ -100,7 +100,7 @@
     src: "{{ effective_path }}/files.tar.gz"
     dest: "/usr/share/nginx/{{ project_name }}"
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: u=rwX,g=rX,o=
     force: false
   become: true
@@ -115,7 +115,7 @@
     src: "{{ effective_path }}/virtualhost.conf"
     dest: "/usr/share/nginx/{{ project_name }}"
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: u=rwX,g=rX,o=
     force: true
   become: true
@@ -305,7 +305,7 @@
     path: "/etc/nginx/htpasswd/{{ project_name }}"
     state: directory
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: u=rwX,g=rX,o=
   become: true
   when:
@@ -316,7 +316,7 @@
     src: "{{ effective_path }}/htpasswd.conf"
     dest: "/etc/nginx/htpasswd/{{ project_name }}/htpasswd.conf"
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: '0660'
     force: false
   become: true
@@ -328,7 +328,7 @@
     src: "{{ effective_path }}/htpasswd.conf"
     dest: "/etc/nginx/htpasswd/{{ project_name }}/htpasswd.conf"
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: '0660'
     force: true
   become: true
@@ -355,7 +355,7 @@
     path: "/etc/nginx/api_keys/{{ project_name }}"
     state: directory
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: u=rwX,g=rX,o=
   become: true
   when:
@@ -366,7 +366,7 @@
     src: "{{ effective_path }}/api_keys.conf"
     dest: "/etc/nginx/api_keys/{{ project_name }}/api_keys.conf"
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: '0660'
     force: false
   become: true
@@ -378,7 +378,7 @@
     src: "{{ effective_path }}/api_keys.conf"
     dest: "/etc/nginx/api_keys/{{ project_name }}/api_keys.conf"
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: '0660'
     force: true
   become: true
