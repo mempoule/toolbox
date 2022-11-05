@@ -175,6 +175,7 @@
     name: "{{ ruser }}"
     groups: www-data
     append: true
+  become: true
 
 - name: nginx - Restart daemon
   service:

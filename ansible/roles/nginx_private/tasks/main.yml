@@ -361,3 +361,10 @@
   when:
   - local_api_keys.stat.exists
   - force_api_keys is defined and force_api_keys
+
+- name: nginx_private - Restart daemon
+  service:
+    name: nginx
+    enabled: yes
+    state: restarted
+  become: true
