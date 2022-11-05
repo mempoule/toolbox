@@ -14,9 +14,6 @@ echo "Commander private repo bash script start" 1>&2
     exit
   fi
 
-# Packages install
-  apt-get install jq ansible -y
-
 # SSH key generate.
   echo "Enter ssh passphrase for the new key : " 1>&2
   read -s gitpassword
@@ -85,4 +82,4 @@ echo "Commander private repo bash script start" 1>&2
     fi
   done
 
-  sudo -u ${SUDO_USER} git clone git@github.com:mempoule/toolbox.git
+  sudo -u ${SUDO_USER} git clone git@github.com:mempoule/toolbox_private.git
