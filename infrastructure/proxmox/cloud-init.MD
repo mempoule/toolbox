@@ -53,5 +53,8 @@ Will show the exact disk location for `qm set`
 # Useful commands
 
     qm resize 500 scsi0 +15G
+
     cat /etc/pve/qemu-server/110.conf | grep net
+    
+    nicreport
 
