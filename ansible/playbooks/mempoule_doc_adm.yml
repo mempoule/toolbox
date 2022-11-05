@@ -1,0 +1,8 @@
+- hosts: mempoule_web_adm
+  roles:
+    - role: apt
+    - role: install
+    - role: nginx
+    - { role: nginx_private, project_name: docs.mempoule.fr }
+  vars:
+    ruser: mempoule
