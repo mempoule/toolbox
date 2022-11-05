@@ -1,3 +1,4 @@
+# PROJECT_DIR
 - name: "nginx_private - {{ project_name }} - PROJECT_DIR - Check LOCAL"
   stat:
     path: "/home/{{ruser}}/mempoule_private/{{ project_name }}"
@@ -11,6 +12,7 @@
   - (project_name is defined and not local_projectdir.stat.exists) or not project_name is defined
 
 
+# virtualhost.conf
 - name: "nginx_private - {{ project_name }} - virtualhost.conf - Check LOCAL"
   stat:
     path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/virtualhost.conf"
@@ -33,8 +35,17 @@
     path: "/usr/share/nginx/{{ project_name }}"
     state: directory
     owner: "{{ ruser }}"
-    group: "www-data"
+    group: "{{ ruser }}"
     mode: '0750'
+  become: true
+
+- name: "nginx_private - {{ project_name }} - Create certificates folder"
+  file:
+    path: "/etc/ssl/certs/{{ project_name }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0644'
   become: true
 
 - name: "nginx_private - {{ project_name }} - virtualhost.conf - Copy"
@@ -46,7 +57,7 @@
     mode: '0600'
     force: false
   become: true
-  register: copy_virtualconf
+  register: copy_virtualconf_noforce
 
 - name: "nginx_private - {{ project_name }} - virtualhost.conf - Copy FORCEMODE"
   copy:
@@ -57,7 +68,7 @@
     mode: '0600'
     force: true
   become: true
-  register: copy_virtualconf
+  register: copy_virtualconf_force
   when: force_virtualhost is defined and force_virtualhost
 
 - name: "nginx_private - virtualhost.conf - symbolic link vhost sites-available"
@@ -66,23 +77,28 @@
     dest: "/etc/nginx/sites-enabled/{{ project_name }}.conf"
     state: link
   become: true
-  when: not copy_virtualconf.skipped
+  when:
+  - copy_virtualconf_noforce is defined and 'skipped' not in copy_virtualconf_noforce or
+    copy_virtualconf_force is defined and 'skipped' not in copy_virtualconf_force
 
-- name: "nginx - {{ project_name }} - wwwfiles - Get list"
-  find:
-    paths: "/usr/share/nginx/{{ project_name }}"
-  register: current_webfiles
+# wwwfiles
+- name: "nginx_private - {{ project_name }} - wwwfiles - Check LOCAL"
+  stat:
+    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/files.tar.gz"
+  register: local_wwwfiles
+  delegate_to: localhost
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - Copy"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/virtualhost.conf"
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/files.tar.gz"
     dest: "/usr/share/nginx/{{ project_name }}"
     owner: "{{ ruser }}"
-    group: www-data
-    mode: '0750'
+    group: "{{ ruser }}"
+    mode: u=rwX,g=rX,o=
     force: false
   become: true
-  register: copy_wwwfiles
+  register: copy_wwwfiles_noforce
+  when: local_wwwfiles.stat.exists
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - Copy FORCEMODE"
   copy:
@@ -93,8 +109,25 @@
     mode: u=rwX,g=rX,o=
     force: true
   become: true
-  register: copy_wwwfiles
-  when: force_wwwfiles is defined and force_wwwfiles
+  register: copy_wwwfiles_force
+  when: local_wwwfiles.stat.exists and force_wwwfiles is defined and force_wwwfiles
+
+- name: "nginx_private - {{ project_name }} - wwwfiles - unarchive"
+  unarchive:
+    src: "/usr/share/nginx/{{ project_name }}/files.tar.gz"
+    dest: "/usr/share/nginx/{{ project_name }}/"
+    remote_src: true
+  become: true
+  register: unarchive_operation
+  when:
+  - copy_wwwfiles_noforce is defined and 'skipped' not in copy_wwwfiles_noforce or
+    copy_wwwfiles_force is defined and 'skipped' not in copy_wwwfiles_force
+
+- name: "nginx_private - {{ project_name }} - wwwfiles - remove archive"
+  file:
+    path:  "/usr/share/nginx/{{ project_name }}/files.tar.gz"
+    state: absent
+  become: true
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - acl"
   file:
@@ -104,4 +137,227 @@
     group: "{{ ruser }}"
     mode: u=rwX,g=rX,o=
   become: true
-#  when: copy_wwwfiles.changed
+
+# certificates
+
+- name: "nginx_private - {{ project_name }} - certificate.crt - Check LOCAL"
+  stat:
+    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.crt"
+  register: local_certificatecrt
+  delegate_to: localhost
+
+- name: "nginx_private - {{ project_name }} - certificate.crt - Check REMOTE"
+  stat:
+    path: "/etc/ssl/certs/{{ project_name }}/certificate.crt"
+  register: remote_certificatecrt
+  become: true
+
+- name: "nginx_private - {{ project_name }} - certificate.key - Check LOCAL"
+  stat:
+    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.key"
+  register: local_certificatekey
+  delegate_to: localhost
+
+- name: "nginx_private - {{ project_name }} - certificate.key - Check REMOTE"
+  stat:
+    path: "/etc/ssl/certs/{{ project_name }}/certificate.key"
+  register: remote_certificatekey
+  become: true
+
+- name: "nginx_private - {{ project_name }} - certificate.crt - Copy"
+  copy:
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.crt"
+    dest: "/etc/ssl/certs/{{ project_name }}/certificate.crt"
+    owner: root
+    group: root
+    mode: '0600'
+    force: false
+  become: true
+  register: copy_certificatecrt_noforce
+  when: local_certificatecrt.stat.exists and local_certificatekey.stat.exists
+
+- name: "nginx_private - {{ project_name }} - certificate.crt - Copy FORCEMODE"
+  copy:
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.crt"
+    dest: "/etc/ssl/certs/{{ project_name }}/certificate.crt"
+    owner: root
+    group: root
+    mode: '0600'
+    force: true
+  become: true
+  register: copy_certificatecrt_force
+  when: force_certificate is defined and force_certificate and local_certificatecrt.stat.exists and local_certificatekey.stat.exists
+
+- name: "nginx_private - {{ project_name }} - certificate.key - Copy"
+  copy:
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.key"
+    dest: "/etc/ssl/certs/{{ project_name }}/certificate.key"
+    owner: root
+    group: root
+    mode: '0600'
+    force: false
+  become: true
+  register: copy_certificatekey_noforce
+  when: local_certificatecrt.stat.exists and local_certificatekey.stat.exists
+
+- name: "nginx_private - {{ project_name }} - certificate.key - Copy FORCEMODE"
+  copy:
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.key"
+    dest: "/etc/ssl/certs/{{ project_name }}/certificate.key"
+    owner: root
+    group: root
+    mode: '0600'
+    force: true
+  become: true
+  register: copy_certificatekey_force
+  when: force_certificate is defined and force_certificate and local_certificatecrt.stat.exists and local_certificatekey.stat.exists
+
+# Cloudflare tweak
+- name: "nginx_private - {{ project_name }} - CloudflareTweak - Check REMOTE"
+  stat:
+    path: "/etc/ssl/certs/{{ project_name }}/certificate.crt"
+  register: postcopy_certificatecrt
+  become: true
+  when:
+  - project_cloudflare_originCA is defined and project_cloudflare_originCA
+
+- name: "nginx_private - {{ project_name }} - CloudflareTweak - check certificate already in"
+  lineinfile:
+    path: "/etc/ssl/certs/{{ project_name }}/certificate.crt"
+    line: "MIICiTCCAi6gAwIBAgIUXZP3MWb8MKwBE1Qbawsp1sfA/Y4wCgYIKoZIzj0EAwIw"
+    state: present
+  check_mode: yes
+  become: true
+  register: cloudflarecrtin
+  when:
+  - project_cloudflare_originCA is defined and project_cloudflare_originCA
+  - postcopy_certificatecrt.stat.exists
+
+- name: "nginx_private - {{ project_name }} - CloudflareTweak - add CF certificate"
+  lineinfile:
+    path: "/etc/ssl/certs/{{ project_name }}/certificate.crt"
+    line: "{{ lookup('file', 'vars/cloudflare.crt') }}"
+    state: present
+  become: true
+  when:
+  - project_cloudflare_originCA is defined and project_cloudflare_originCA
+  - cloudflarecrtin is changed
+  - postcopy_certificatecrt.stat.exists
+
+- name: "nginx - Create htpasswd folder"
+  file:
+    path: "/etc/nginx/htpasswd"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: "nginx - Create api_keys folder"
+  file:
+    path: "/etc/nginx/api_keys"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+# htpasswd
+- name: "nginx_private - {{ project_name }} - htpasswd - Check LOCAL"
+  stat:
+    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/htpasswd.conf"
+  register: local_htpasswd
+  delegate_to: localhost
+
+- name: "nginx_private - {{ project_name }} - htpasswd - Check REMOTE"
+  stat:
+    path: "/etc/nginx/htpasswd/{{ project_name }}/htpasswd.conf"
+  register: remote_htpasswd
+  become: true
+
+- name: "nginx_private - {{ project_name }} - htpasswd - Create folder"
+  file:
+    path: "/etc/nginx/htpasswd/{{ project_name }}"
+    state: directory
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+    mode: u=rwX,g=rX,o=
+  become: true
+  when:
+  - local_htpasswd.stat.exists
+
+- name: "nginx_private - {{ project_name }} - htpasswd - Copy"
+  copy:
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/htpasswd.conf"
+    dest: "/etc/nginx/htpasswd/{{ project_name }}/htpasswd.conf"
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+    mode: '0660'
+    force: false
+  become: true
+  register: copy_htpasswd_noforce
+  when: local_htpasswd.stat.exists
+
+- name: "nginx_private - {{ project_name }} - htpasswd - Copy FORCEMODE"
+  copy:
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/htpasswd.conf"
+    dest: "/etc/nginx/htpasswd/{{ project_name }}/htpasswd.conf"
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+    mode: '0660'
+    force: true
+  become: true
+  register: copy_htpasswd_force
+  when:
+  - local_htpasswd.stat.exists
+  - force_htpasswd is defined and force_htpasswd
+
+# api_keys
+- name: "nginx_private - {{ project_name }} - api_keys - Check LOCAL"
+  stat:
+    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/api_keys.conf"
+  register: local_api_keys
+  delegate_to: localhost
+
+- name: "nginx_private - {{ project_name }} - api_keys - Check REMOTE"
+  stat:
+    path: "/etc/nginx/api_keys/{{ project_name }}/api_keys.conf"
+  register: remote_api_keys
+  become: true
+
+- name: "nginx_private - {{ project_name }} - api_keys - Create folder"
+  file:
+    path: "/etc/nginx/api_keys/{{ project_name }}"
+    state: directory
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+    mode: u=rwX,g=rX,o=
+  become: true
+  when:
+  - local_api_keys.stat.exists
+
+- name: "nginx_private - {{ project_name }} - api_keys - Copy"
+  copy:
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/api_keys.conf"
+    dest: "/etc/nginx/api_keys/{{ project_name }}/api_keys.conf"
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+    mode: '0660'
+    force: false
+  become: true
+  register: copy_api_keys_noforce
+  when: local_api_keys.stat.exists
+
+- name: "nginx_private - {{ project_name }} - api_keys - Copy FORCEMODE"
+  copy:
+    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/api_keys.conf"
+    dest: "/etc/nginx/api_keys/{{ project_name }}/api_keys.conf"
+    owner: "{{ ruser }}"
+    group: "{{ ruser }}"
+    mode: '0660'
+    force: true
+  become: true
+  register: copy_api_keys_force
+  when:
+  - local_api_keys.stat.exists
+  - force_api_keys is defined and force_api_keys

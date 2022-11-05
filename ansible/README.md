@@ -97,6 +97,34 @@ To avoid having variables everywhere, they will be declared here, and used direc
 
 ---
 
+#### force_certificate
+**Type** : bool
+
+**Roles** : nginx_private
+
+*Description: forces override in case there are already wwwfiles in the folder*
+
+---
+
+#### force_api_keys
+**Type** : bool
+
+**Roles** : nginx_private
+
+*Description: forces override*
+
+---
+
+#### force_htpassswd
+**Type** : bool
+
+**Roles** : nginx_private
+
+*Description: forces override*
+
+---
+
+
 
 ## Private folder
 

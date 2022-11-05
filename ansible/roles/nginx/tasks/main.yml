@@ -4,6 +4,24 @@
       - nginx
   become: true
 
+- name: "nginx - Create htpasswd folder"
+  file:
+    path: "/etc/nginx/htpasswd"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: "nginx - Create api_keys folder"
+  file:
+    path: "/etc/nginx/api_keys"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
 - name: nginx - Firewall - Port 80
   iptables:
     chain: INPUT
