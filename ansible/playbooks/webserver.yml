@@ -1,7 +1,0 @@
-- hosts: mempoule_commander_adm
-  roles:
-    - role: apt
-    - role: install
-    - role: nginx
-  vars:
-    ruser: mempoule
