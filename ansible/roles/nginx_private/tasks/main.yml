@@ -7,10 +7,9 @@
   set_fact:
       effective_path: "{{ '/home/{{ruser}}/toolbox_private/nginx/{{reverse_name}}/{{ project_name }}' if reverse_name is defined and reverse_name else '/home/{{ruser}}/toolbox_private/nginx/{{ project_name }}' }}"
 
-- name: "fdsfdsfsdfsd"
+- name: "nginx_private - Effective_path"
   debug:
     msg: "{{ effective_path }}"
-
 
 # PROJECT_DIR
 - name: "nginx_private - {{ project_name }} - PROJECT_DIR - Check LOCAL"
@@ -84,8 +83,8 @@
     path: "/usr/share/nginx/{{ project_name }}"
     state: directory
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
-    mode: '0750'
+    group: www-data
+    mode: u=rwX,g=rX,o=
   become: true
   when: reverse_name is not defined or not reverse_name
 
@@ -150,7 +149,7 @@
     path: "/usr/share/nginx/{{ project_name }}"
     recurse: yes
     owner: "{{ ruser }}"
-    group: "{{ ruser }}"
+    group: www-data
     mode: u=rwX,g=rX,o=
   become: true
   when: reverse_name is not defined or not reverse_name
