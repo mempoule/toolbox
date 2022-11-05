@@ -134,6 +134,7 @@
   register: unarchive_operation
   when:
   - reverse_name is not defined or not reverse_name
+  - local_wwwfiles.stat.size > 0
   - copy_wwwfiles_noforce is defined and 'skipped' not in copy_wwwfiles_noforce or
     copy_wwwfiles_force is defined and 'skipped' not in copy_wwwfiles_force
 

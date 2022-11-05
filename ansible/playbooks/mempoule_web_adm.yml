@@ -1,4 +1,4 @@
-- hosts: mempoule_rev_adm
+- hosts: mempoule_web_adm
   roles:
     - role: apt
     - role: install

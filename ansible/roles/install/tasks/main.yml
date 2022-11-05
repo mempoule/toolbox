@@ -291,6 +291,15 @@
   loop: "{{var_install['iptables_allowed_ssh']}}"
   become: true
 
+- name: Install - Iptables - Ping
+  iptables:
+    chain: INPUT
+    protocol: icmp
+    source: "{{item}}"
+    jump: ACCEPT
+  loop: "{{var_install['iptables_allowed_ssh']}}"
+  become: true
+
 - name: Install - Iptables - Deny else
   iptables:
     chain: INPUT
