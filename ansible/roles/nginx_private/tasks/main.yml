@@ -1,7 +1,16 @@
+- name: "nginx_private - {{ project_name }} - Define path depending on reverse or direct"
+  set_fact:
+      effective_path: "{{ '/home/{{ruser}}/toolbox_private/nginx/{{reverse_name}}/{{ project_name }}' if reverse_name is defined and reverse_name else '/home/{{ruser}}/toolbox_private/nginx/{{ project_name }}' }}"
+
+- name: "fdsfdsfsdfsd"
+  debug:
+    msg: "{{ effective_path }}"
+
+
 # PROJECT_DIR
 - name: "nginx_private - {{ project_name }} - PROJECT_DIR - Check LOCAL"
   stat:
-    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}"
+    path: "{{ effective_path }}"
   register: local_projectdir
   when: project_name is defined
   delegate_to: localhost
@@ -15,7 +24,7 @@
 # virtualhost.conf
 - name: "nginx_private - {{ project_name }} - virtualhost.conf - Check LOCAL"
   stat:
-    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/virtualhost.conf"
+    path: "{{ effective_path }}/virtualhost.conf"
   register: local_virtualconf
   delegate_to: localhost
 
@@ -38,6 +47,7 @@
     group: "{{ ruser }}"
     mode: '0750'
   become: true
+  when: reverse_name is not defined or not reverse_name
 
 - name: "nginx_private - {{ project_name }} - Create certificates folder"
   file:
@@ -50,7 +60,7 @@
 
 - name: "nginx_private - {{ project_name }} - virtualhost.conf - Copy"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/virtualhost.conf"
+    src: "{{ effective_path }}/virtualhost.conf"
     dest: "/etc/nginx/sites-available/{{ project_name }}.conf"
     owner: root
     group: root
@@ -61,7 +71,7 @@
 
 - name: "nginx_private - {{ project_name }} - virtualhost.conf - Copy FORCEMODE"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/virtualhost.conf"
+    src: "{{ effective_path }}/virtualhost.conf"
     dest: "/etc/nginx/sites-available/{{ project_name }}.conf"
     owner: root
     group: root
@@ -84,13 +94,13 @@
 # wwwfiles
 - name: "nginx_private - {{ project_name }} - wwwfiles - Check LOCAL"
   stat:
-    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/files.tar.gz"
+    path: "{{ effective_path }}/files.tar.gz"
   register: local_wwwfiles
   delegate_to: localhost
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - Copy"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/files.tar.gz"
+    src: "{{ effective_path }}/files.tar.gz"
     dest: "/usr/share/nginx/{{ project_name }}"
     owner: "{{ ruser }}"
     group: "{{ ruser }}"
@@ -102,7 +112,7 @@
 
 - name: "nginx_private - {{ project_name }} - wwwfiles - Copy FORCEMODE"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/virtualhost.conf"
+    src: "{{ effective_path }}/virtualhost.conf"
     dest: "/usr/share/nginx/{{ project_name }}"
     owner: "{{ ruser }}"
     group: "{{ ruser }}"
@@ -142,7 +152,7 @@
 
 - name: "nginx_private - {{ project_name }} - certificate.crt - Check LOCAL"
   stat:
-    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.crt"
+    path: "{{ effective_path }}/certificate.crt"
   register: local_certificatecrt
   delegate_to: localhost
 
@@ -154,7 +164,7 @@
 
 - name: "nginx_private - {{ project_name }} - certificate.key - Check LOCAL"
   stat:
-    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.key"
+    path: "{{ effective_path }}/certificate.key"
   register: local_certificatekey
   delegate_to: localhost
 
@@ -166,7 +176,7 @@
 
 - name: "nginx_private - {{ project_name }} - certificate.crt - Copy"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.crt"
+    src: "{{ effective_path }}/certificate.crt"
     dest: "/etc/ssl/certs/{{ project_name }}/certificate.crt"
     owner: root
     group: root
@@ -178,7 +188,7 @@
 
 - name: "nginx_private - {{ project_name }} - certificate.crt - Copy FORCEMODE"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.crt"
+    src: "{{ effective_path }}/certificate.crt"
     dest: "/etc/ssl/certs/{{ project_name }}/certificate.crt"
     owner: root
     group: root
@@ -190,7 +200,7 @@
 
 - name: "nginx_private - {{ project_name }} - certificate.key - Copy"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.key"
+    src: "{{ effective_path }}/certificate.key"
     dest: "/etc/ssl/certs/{{ project_name }}/certificate.key"
     owner: root
     group: root
@@ -202,7 +212,7 @@
 
 - name: "nginx_private - {{ project_name }} - certificate.key - Copy FORCEMODE"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/certificate.key"
+    src: "{{ effective_path }}/certificate.key"
     dest: "/etc/ssl/certs/{{ project_name }}/certificate.key"
     owner: root
     group: root
@@ -265,7 +275,7 @@
 # htpasswd
 - name: "nginx_private - {{ project_name }} - htpasswd - Check LOCAL"
   stat:
-    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/htpasswd.conf"
+    path: "{{ effective_path }}/htpasswd.conf"
   register: local_htpasswd
   delegate_to: localhost
 
@@ -288,7 +298,7 @@
 
 - name: "nginx_private - {{ project_name }} - htpasswd - Copy"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/htpasswd.conf"
+    src: "{{ effective_path }}/htpasswd.conf"
     dest: "/etc/nginx/htpasswd/{{ project_name }}/htpasswd.conf"
     owner: "{{ ruser }}"
     group: "{{ ruser }}"
@@ -300,7 +310,7 @@
 
 - name: "nginx_private - {{ project_name }} - htpasswd - Copy FORCEMODE"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/htpasswd.conf"
+    src: "{{ effective_path }}/htpasswd.conf"
     dest: "/etc/nginx/htpasswd/{{ project_name }}/htpasswd.conf"
     owner: "{{ ruser }}"
     group: "{{ ruser }}"
@@ -315,7 +325,7 @@
 # api_keys
 - name: "nginx_private - {{ project_name }} - api_keys - Check LOCAL"
   stat:
-    path: "/home/{{ruser}}/mempoule_private/{{ project_name }}/api_keys.conf"
+    path: "{{ effective_path }}/api_keys.conf"
   register: local_api_keys
   delegate_to: localhost
 
@@ -338,7 +348,7 @@
 
 - name: "nginx_private - {{ project_name }} - api_keys - Copy"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/api_keys.conf"
+    src: "{{ effective_path }}/api_keys.conf"
     dest: "/etc/nginx/api_keys/{{ project_name }}/api_keys.conf"
     owner: "{{ ruser }}"
     group: "{{ ruser }}"
@@ -350,7 +360,7 @@
 
 - name: "nginx_private - {{ project_name }} - api_keys - Copy FORCEMODE"
   copy:
-    src: "/home/{{ruser}}/mempoule_private/{{ project_name }}/api_keys.conf"
+    src: "{{ effective_path }}/api_keys.conf"
     dest: "/etc/nginx/api_keys/{{ project_name }}/api_keys.conf"
     owner: "{{ ruser }}"
     group: "{{ ruser }}"
