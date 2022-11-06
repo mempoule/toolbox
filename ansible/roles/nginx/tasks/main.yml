@@ -2,6 +2,7 @@
   apt:
     pkg:
       - nginx
+      - certbot
   become: true
 
 - name: "nginx - Create htpasswd folder"
