@@ -1,0 +1,92 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+then
+  echo -e "\nList of available params : extend acme totp clone gitssh template\n"
+else
+  case $1 in
+    "extend")
+      echo -e "\n#############################################################"
+      echo "  OVH installation Softraid Bypassed informative commands "
+      echo -e "#############################################################\n"
+      echo -e "loc_mapper_name:\n  df -h | grep mapper | cut -d ' ' -f1\n"
+      echo -e "loc_vg_name:\n  /sbin/pvs --separator \",\" | grep dev | xargs | cut -d \",\" -f2\n"
+      echo -e "disk/part list :\n  lsblk | grep -v '^loop'\n"
+      echo -e "Commands : \n"
+      echo "/sbin/wipefs /dev/{loc_unused_disk}"
+      echo "/sbin/pvcreate /dev/{loc_unused_disk} -f"
+      echo "/sbin/vgextend {loc_vg_name} /dev/{loc_unused_disk}"
+      echo "/sbin/lvresize --extents +100%FREE --resizefs {loc_mapper_name}"
+      echo -e "\n#############################################################\n"
+    ;;
+    "acme")
+      echo -e "\n#############################################################"
+      echo "  ACME Registration steps "
+      echo -e "#############################################################\n"
+      echo "1) Add ns record for hostname.yourdomain.com"
+      echo -e "2) Register account on ACME\n\n   sudo pvenode acme account register default noreply@yourdomain.com --directory https://acme-v02.api.letsencrypt.org/directory"
+      echo -e "   pvenode config set --acme domains=your.domain.here\n"
+      echo -e "4) Open port 80 for ACME registration\n\n   sudo iptables -I INPUT 1 -p tcp --dport 80 -j ACCEPT\n"
+      echo -e "5) Order certificate\n\n   sudo pvenode acme cert order\n"
+      echo -e "6) Close port 80\n\n   sudo iptables -D INPUT -p tcp --dport 80 -j ACCEPT\n"
+    ;;
+    "totp")
+      echo -e "\n#####################################################################"
+      echo -e "  TOTP doc : https://pve.proxmox.com/wiki/OATH(TOTP)_Authentication"
+      echo -e "#####################################################################"
+      echo -e "\nMaster Code and QR generation :\n"
+      echo '   clear && OATHKEYID=$(oathkeygen) && echo -e OATH key ID for $USER: $OATHKEYID && qrencode -t ANSIUTF8 -o - $(echo "otpauth://totp/PVE:$USER@"$(hostname --fqdn)"?secret=$OATHKEYID")'
+      echo -e "\nRecovery generation :\n"
+      echo -e "   for i in {1..10};do openssl rand -hex 12;done\n"
+      echo -e "user.cfg location\n\n   root@pve1:~# grep -rnw / -e 'MY6G2HZRD6HYCHPG'"
+      echo -e "   /etc/pve/user.cfg:2:user:root@pam:1:0:::mail@yourdomain.com::MY6G2HZRD6HYCHPG:\n"
+      echo -e "Encoding\n"
+      echo -e "   qrencode -o qrcode.png \"otpauth://totp/PVE:root@pve1?secret=\$OATHKEYID\"\n"
+      mpack -s "$()" -c image/png qrcode.png ktnoc@protonmail.com
+    ;;
+    "clone")
+      echo -e "\n#############################################################"
+      echo "  Template cloning reminder"
+      echo -e "#############################################################\n"
+      echo -e "1) Optional - Stop the VM\n\n   sudo qm stop 110\n"
+      echo -e "2) Optional - Destroy the VM\n\n   sudo qm destroy 110\n"
+      echo -e "3) Cloning the template\n\n   sudo qm clone 9000 110 --name mempoule-commander-adm --full\n"
+      echo -e "4) Cloning the template\n\n   sudo qm resize 110 scsi0 +15G\n"
+      echo -e "5) Optional - If DHCP via pfSense get the hw address and create the mapping\n"
+      echo -e "5) Optional - Start the VM\n\n   sudo qm start 110\n"
+    ;;
+    "gitssh")
+      echo -e "\n#############################################################"
+      echo "  Get Git SSH Keys from specific user"
+      echo -e "#############################################################\n"
+      echo -e "curl -s https://github.com/mempoule.keys\n"
+    ;;
+    "template")
+      echo -e "\n#############################################################"
+      echo "  Create a new template"
+      echo -e "#############################################################\n"
+      echo -e "1) Get local_storage\n\n   pvesm status\n"
+      echo -e "2) Get the ISO\n\n   sudo wget -N https://releases.ubuntu.com/22.04/ubuntu-22.04.1-live-server-amd64.iso -P /var/lib/vz/template/iso/\n"
+      echo -e "3) Template creation and disk import\n\n   sudo qm create 9000 --memory 2048 --name ubuntu-cloud-22 --net0 virtio,bridge=vmbr100"
+      echo -e "   sudo qm importdisk 9000 /var/lib/vz/template/iso/ubuntu-22.04.1-live-server-amd64.iso {local_storage}\n"
+      echo -e "4) Get disk_location\n\npvesm list {local_storage} | grep \"9000.*.raw.*\" | cut -d \" \" -f1\n"
+      echo -e "5) Configuration options (adapt it !)\n\n"
+      echo -e "   sudo qm set 9000 --scsihw virtio-scsi-pci --scsi0 {disk_location}"
+      echo -e "   sudo qm set 9000 --ide2 local:cloudinit"
+      echo -e "   sudo qm set 9000 --boot c -bootdisk scsi0"
+      echo -e "   sudo qm set 9000 --boot c --bootdisk scsi0"
+      echo -e "   sudo qm set 9000 --serial0 socket --vga serial0"
+      echo -e "   sudo qm set 9000 --scsi0 {disk_location},cache=writethrough,ssd=1"
+      echo -e "   sudo qm set 9000 --ipconfig0 ip=dhcp"
+      echo -e "   sudo qm set 9000 user"
+      echo -e "   sudo qm set 9000 password"
+      echo -e "   sudo qm set 9000 --cipassword password"
+      echo -e "   sudo qm set 9000 --agent enabled=1"
+      echo -e "   sudo qm set 9000 --sshkey /tmp/keys_to_add.pub"
+      echo -e "   sudo qm template 9000"
+    ;;
+    *)
+      echo -e "\nList of available params : extend acme totp clone gitssh template\n"
+    ;;
+  esac
+fi

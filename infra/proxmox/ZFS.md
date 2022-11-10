@@ -129,8 +129,5 @@
 - Log in your proxmox server to check your network settings are OK : https://{IPv4_Address}:8006/
 ---
 
-### III - Proxmox Configuration
-
-- Log in via SSH
 
 

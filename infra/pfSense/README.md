@@ -141,6 +141,8 @@ On Trash VM GUI, go to `System -> Package Manager -> Available Packages`
 
  - **Command 2 :**  `route add default SERVER_IP.254`
 
+ - **Command 3 :** `kbdcontrol -l /usr/share/vt/keymaps/fr.kbd`
+
  - `Diagnostics -> Reboot`
 
  - Test connectivity via QEMU or Trash GUI VM

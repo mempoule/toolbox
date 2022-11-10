@@ -2,7 +2,7 @@
 
 echo "Autotemplate script start."
 
-existing_flag=$(qm list | grep " 9000 " | wc -l)
+existing_flag=$(qm list | grep -c " 9000 ")
 
 if [ "${existing_flag}" != "0" ]
 then
@@ -12,9 +12,9 @@ fi
 
 
 echo "Enter user name : "
-read username
+read -r username
 echo "Enter password : "
-read -s password
+read -rs password
 
 if ! [[ "${username}" =~ [^[:alnum:]]+ ]] && ! [[ ${password} =~ " " ]]
 then
