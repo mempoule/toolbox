@@ -24,14 +24,14 @@ admin_with_mail=0
 ########################################################################
 #     forcemode
 ########################################################################
-
+echo "-------------------------------------------------------------------------------" | tee $LOGFILE
 if [[ "$1" == "force" ]]
 then
   echo "$TIMESTAMP - FORCEMODE : ON" | tee $LOGFILE
 else
   echo "$TIMESTAMP - FORCEMODE : OFF" | tee $LOGFILE
 fi
-
+echo "-------------------------------------------------------------------------------" | tee $LOGFILE
 
 ########################################################################
 #    One mail minimum to avoid locking out
@@ -56,7 +56,7 @@ else
   echo "$TIMESTAMP - At least one admin has got a mail" | tee $LOGFILE
 fi
 
-echo "lalala"
+
 ########################################################################
 #    TOTP status check
 ########################################################################
@@ -81,6 +81,8 @@ fi
 
 send_totp() {
   echo "$1 $2 $3 $4 $5"
+  echo "$TIMESTAMP - ${username} mail sent" | tee $LOGFILE
+
 }
 
 while IFS= read -r line; do
@@ -94,19 +96,20 @@ while IFS= read -r line; do
     if [ -z "${cur_totp}" ]
     then
       cur_totp=$(oathkeygen)
-      echo "NEW TOTP ${cur_totp}"
       new_line=$(sed "s/:/:${cur_totp}/8" <<< $line)
       sed -i "/${line}/c${new_line}" /etc/pve/user.cfg
       if [ -z "${mail_address}" ]
       then
+        echo "$TIMESTAMP - ${username} has no mail set" | tee $LOGFILE
         users_activated_nomail=$((users_activated_nomail+1))
       else
+        echo "$TIMESTAMP - ${username} mail sending..." | tee $LOGFILE
         send_totp ${username} ${first_name} ${last_name} ${mail_address} ${cur_totp}
       fi
       users_activated=$((users_activated+1))
     else
       users_already_set=$(( users_already_set+1 ))
-      echo "${username} already have a TOTP key" | tee $LOGFILE
+      echo "$TIMESTAMP - ${username} already have a TOTP key" | tee $LOGFILE
       if [[ "$1" == "force" ]]
       then
         if ! [ -z "${mail_address}" ]
@@ -118,8 +121,7 @@ while IFS= read -r line; do
   fi
 done < "/etc/pve/user.cfg"
 
-
-
-echo "Total Users activated : ${users_activated}"
-echo "Total Users activated without mail : ${users_activated_nomail}"
-echo "Total Users already set : ${users_already_set}"
+echo "-------------------------------------------------------------------------------"
+echo "$TIMESTAMP - Total Users activated : ${users_activated}"
+echo "$TIMESTAMP - Total Users activated without mail : ${users_activated_nomail}"
+echo "$TIMESTAMP - Total Users already set : ${users_already_set}"

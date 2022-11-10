@@ -42,7 +42,6 @@ else
       echo -e "   /etc/pve/user.cfg:2:user:root@pam:1:0:::mail@yourdomain.com::MY6G2HZRD6HYCHPG:\n"
       echo -e "Encoding\n"
       echo -e "   qrencode -o qrcode.png \"otpauth://totp/PVE:root@pve1?secret=\$OATHKEYID\"\n"
-      mpack -s "$()" -c image/png qrcode.png ktnoc@protonmail.com
     ;;
     "clone")
       echo -e "\n#############################################################"
