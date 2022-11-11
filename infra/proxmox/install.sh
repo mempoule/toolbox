@@ -1,12 +1,14 @@
 #!/bin/bash
 
+export PATH=$PATH:/sbin/
+
 ########################################################################
 #     Priviledged usercheck
 ########################################################################
 
 echo "$TIMESTAMP - Priviledged usercheck"
 
-if [[ $EUID -eq 0 ]] | [[ -z ${SUDO_USER// } ]]
+if [[ $EUID -ne 0 ]] && [[ -z ${SUDO_USER// } ]]
 then
   echo "$TIMESTAMP - Not priviledged user, aborting."
   exit
@@ -96,12 +98,12 @@ echo "$TIMESTAMP - DONE  - install new packages" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - new user" | tee -a $LOGFILE
 
-if ! [[ -d /home/${priviledged_user} ]]
+if [[ ! -d /home/${priviledged_user} ]]
 then
   echo -e "User : ${priviledged_user} non-existent, creating...\n"
   echo "Enter password for new user ${priviledged_user}: "
   read -sr password
-  if ! [[ ${password} =~ " " ]]
+  if [[ ! ${password} =~ " " ]]
   then
     pass=$(perl -e 'print crypt($ARGV[0], "password")' "${password}")
     useradd -m -p "${pass}" ${priviledged_user} --shell /bin/bash
@@ -112,10 +114,11 @@ then
   fi
 else
   echo "$TIMESTAMP - INFO  - ${priviledged_user} already created" | tee -a $LOGFILE
-  echo "Enter password of existing user ${priviledged_user}: "
+  echo -e "\n\nEnter password of existing user ${priviledged_user} (for VM templates): "
   read -sr password
-  if  [[ ${password} =~ " " ]]
-    echo "Must provide a valid user / password, exiting"
+  if [[ ${password} =~ " " ]] || [[ ${password} == "" ]]
+  then
+    echo "Must provide a valid password, exiting"
     exit
   fi
 fi
@@ -130,16 +133,13 @@ echo "$TIMESTAMP - DONE  - new user" | tee -a $LOGFILE
 ########################################################################
 
 echo "$TIMESTAMP - START - IPv6 stop" | tee -a $LOGFILE
-{
-  echo "net.ipv6.conf.all.disable_ipv6 = 1"
-  echo "net.ipv6.conf.all.disable_ipv6 = 1"
-  echo "net.ipv6.conf.lo.disable_ipv6 = 1"
-} >> /etc/sysctl.conf
+
+grep -qxF 'net.ipv6.conf.all.disable_ipv6 = 1' /etc/sysctl.conf || echo 'net.ipv6.conf.all.disable_ipv6 = 1' >> /etc/sysctl.conf
+grep -qxF 'net.ipv6.conf.default.disable_ipv6 = 1' /etc/sysctl.conf || echo 'net.ipv6.conf.default.disable_ipv6 = 1' >> /etc/sysctl.conf
+grep -qxF 'net.ipv6.conf.lo.disable_ipv6 = 1' /etc/sysctl.conf || echo 'net.ipv6.conf.lo.disable_ipv6 = 1' >> /etc/sysctl.conf
 sysctl -p
-echo "IPv6 is now disabled"
 
 echo "$TIMESTAMP - DONE  - IPv6 stop" | tee -a $LOGFILE
-
 
 ########################################################################
 #     fail2ban
@@ -177,15 +177,14 @@ echo "$TIMESTAMP - START - bashrc tweaks" | tee -a $LOGFILE
 {
   echo "export EDITOR=vim"
   echo -e "alias ll='ls -alF'"
-  echo -e "alias iptables='/sbin/iptables'"
-  echo -e "alias ifconfig='/sbin/ifconfig'"
+  echo -e "export PATH=$PATH:/sbin"
 } >> /root/.bashrc
+
 
 {
   echo "export EDITOR=vim"
   echo -e "alias ll='ls -alF'"
-  echo -e "alias iptables='/sbin/iptables'"
-  echo -e "alias ifconfig='/sbin/ifconfig'"
+  echo -e "export PATH=$PATH:/sbin"
 } >> /home/${priviledged_user}/.bashrc
 
 echo "$TIMESTAMP - DONE  - bashrc tweaks" | tee -a $LOGFILE
@@ -197,6 +196,7 @@ echo "$TIMESTAMP - DONE  - bashrc tweaks" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - vimrc tweaks" | tee -a $LOGFILE
 
+rm /root/.vimrc 2>/dev/null
 {
   echo "set nocompatible"
   echo "set mouse-=a"
@@ -205,6 +205,7 @@ echo "$TIMESTAMP - START - vimrc tweaks" | tee -a $LOGFILE
   echo "syntax on"
 } >> /root/.vimrc
 
+rm /home/${priviledged_user}/.vimrc 2>/dev/null
 {
   echo "set nocompatible"
   echo "set mouse-=a"
@@ -233,8 +234,8 @@ echo "$TIMESTAMP - DONE - vimrc tweaks" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - priviledged user to PAM" | tee -a $LOGFILE
 
-/sbin/pveum user add ${priviledged_user}@pam
-/sbin/pveum acl modify / --roles Administrator --users ${priviledged_user}@pam
+pveum user add ${priviledged_user}@pam
+pveum acl modify / --roles Administrator --users ${priviledged_user}@pam
 
 echo "$TIMESTAMP - DONE  - priviledged user to PAM" | tee -a $LOGFILE
 
@@ -275,12 +276,14 @@ chmod 700 /home/${priviledged_user}/.ssh 2>/dev/null
 keylist=$(curl -s https://github.com/${github_name}.keys)
 keylist_count=0
 
-if [[ $keylist =~ *ssh-rsa* ]]
+if [[ $keylist =~ "ssh-rsa" ]]
 then
+  MYTMPDIR="$(mktemp -d)"
+  MYTMPFILE="${MYTMPDIR}/keys_to_add.pub"
   while IFS= read -r key
   do
     echo "$key" >> /home/${priviledged_user}/.ssh/authorized_keys
-    echo "$key" >> /tmp/keys_to_add.pub
+    echo "$key" >> $MYTMPFILE
     keylist_count=$((keylist_count+1))
   done <<< "$keylist"
   chmod 600 /home/${priviledged_user}/.ssh/authorized_keys
@@ -314,12 +317,15 @@ wget -N https://releases.ubuntu.com/22.04/ubuntu-22.04.1-live-server-amd64.iso -
 wget -N https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img -P /var/lib/vz/template/iso/
 wget -N https://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img -P /var/lib/vz/template/iso/
 wget -N https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img -P /var/lib/vz/template/iso/
-wget -N https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2
-wget -N https://releases.ubuntu.com/22.10/ubuntu-22.10-desktop-amd64.iso /var/lib/vz/template/iso/
+wget -N https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-genericcloud-amd64.qcow2 -P /var/lib/vz/template/iso/
+wget -N https://releases.ubuntu.com/22.10/ubuntu-22.10-desktop-amd64.iso -P /var/lib/vz/template/iso/
 
-wget -N https://frafiles.netgate.com/mirror/downloads/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz -P /var/lib/vz/template/iso/
-gunzip -f /var/lib/vz/template/iso/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz
-rm /var/lib/vz/template/iso/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz
+if  [[ ! -f /var/lib/vz/template/iso/pfSense-CE-2.6.0-RELEASE-amd64.iso ]]
+then
+  wget -N https://frafiles.netgate.com/mirror/downloads/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz -P /var/lib/vz/template/iso/
+  gunzip -f /var/lib/vz/template/iso/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz
+  rm /var/lib/vz/template/iso/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz
+fi
 
 echo "$TIMESTAMP - DONE - Basic ISO get" | tee -a $LOGFILE
 
@@ -346,9 +352,9 @@ do
     } >> /etc/network/interfaces
   fi
 
-  if [[ $(grep -c "vmbr1${vmbr_id}" /etc/network/interfaces)" -eq 0 ]]
+  if [[ $(grep -c "vmbr1${vmbr_id}" /etc/network/interfaces) -eq 0 ]]
   then
-    echo "YAPA 1${vmbr_id}"
+    echo "$TIMESTAMP - STOP  - VMBR 1${vmbr_id} autocreate" | tee -a $LOGFILE
     {
       echo -e "\nauto vmbr1${vmbr_id}"
       echo "iface vmbr1${vmbr_id} inet manual"
@@ -368,117 +374,188 @@ echo "$TIMESTAMP - STOP  - VMBR autocreate" | tee -a $LOGFILE
 #     Ubuntu 18 cloudimage template
 ########################################################################
 
-echo "$TIMESTAMP - START - Ubuntu 18 cloudimage template" | tee -a $LOGFILE
-
+distrib_name="Ubuntu"
 distrib_template_ver="18"
 distrib_template_prefix="90"
 cloudimg_name="bionic-server-cloudimg-amd64.img"
 
-qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
-qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &> /dev/null
-disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
-qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
-qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
-qm set ${distrib_template_prefix}${distrib_template_ver} --boot c -bootdisk scsi0
-qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
-qm set ${distrib_template_prefix}${distrib_template_ver} --serial0 socket --vga serial0
-qm set ${distrib_template_prefix}${distrib_template_ver} --scsi0 ${disk_location},cache=writethrough,ssd=1
-qm set ${distrib_template_prefix}${distrib_template_ver} --ipconfig0 ip=dhcp
-qm set ${distrib_template_prefix}${distrib_template_ver} --ciuser ${priviledged_user}
-qm set ${distrib_template_prefix}${distrib_template_ver} --cipassword ${password}
-qm set ${distrib_template_prefix}${distrib_template_ver} --agent enabled=1
-if [ "${keylist_count}" -gt 0 ]
-then
-  qm set ${distrib_template_prefix}${distrib_template_ver} --sshkey /tmp/keys_to_add.pub
-fi
-qm template ${distrib_template_prefix}${distrib_template_ver}
+echo "$TIMESTAMP - START - ${distrib_name} ${distrib_template_ver} cloudimage template" | tee -a $LOGFILE
 
-echo "$TIMESTAMP - DONE - Ubuntu 18 cloudimage template" | tee -a $LOGFILE
+if [[ -f /etc/pve/qemu-server/${distrib_template_prefix}${distrib_template_ver}.conf ]]
+then
+  echo "$TIMESTAMP - INFO - ${distrib_name} ${distrib_template_ver} cloudimage exists, skipped" | tee -a $LOGFILE
+else
+  qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
+  qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &> /dev/null
+  disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
+  qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
+  qm set ${distrib_template_prefix}${distrib_template_ver} --boot c -bootdisk scsi0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --serial0 socket --vga serial0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --scsi0 ${disk_location},cache=writethrough,ssd=1
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ipconfig0 ip=dhcp
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ciuser ${priviledged_user}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --cipassword ${password}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --agent enabled=1
+  if [ "${keylist_count}" -gt 0 ]
+  then
+    qm set ${distrib_template_prefix}${distrib_template_ver} --sshkey $MYTMPFILE
+  fi
+  qm template ${distrib_template_prefix}${distrib_template_ver}
+  echo "$TIMESTAMP - DONE - ${distrib_name} ${distrib_template_ver} cloudimage template" | tee -a $LOGFILE
+fi
 
 
 ########################################################################
 #     Ubuntu 20 cloudimage template
 ########################################################################
 
-echo "$TIMESTAMP - START - Ubuntu 20 cloudimage template" | tee -a $LOGFILE
-
+distrib_name="Ubuntu"
 distrib_template_ver="20"
 distrib_template_prefix="90"
 cloudimg_name="focal-server-cloudimg-amd64.img"
 
-qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
-qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &> /dev/null
-disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
-qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
-qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
-qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
-qm set ${distrib_template_prefix}${distrib_template_ver} --serial0 socket --vga serial0
-qm set ${distrib_template_prefix}${distrib_template_ver} --scsi0 ${disk_location},cache=writethrough,ssd=1
-qm set ${distrib_template_prefix}${distrib_template_ver} --ipconfig0 ip=dhcp
-qm set ${distrib_template_prefix}${distrib_template_ver} --ciuser ${priviledged_user}
-qm set ${distrib_template_prefix}${distrib_template_ver} --cipassword ${password}
-qm set ${distrib_template_prefix}${distrib_template_ver} --agent enabled=1
-qm set ${distrib_template_prefix}${distrib_template_ver} --sshkey /tmp/keys_to_add.pub
-qm template ${distrib_template_prefix}${distrib_template_ver}
+echo "$TIMESTAMP - START - ${distrib_name} ${distrib_template_ver} cloudimage template" | tee -a $LOGFILE
 
-echo "$TIMESTAMP - DONE - Ubuntu 20 cloudimage template" | tee -a $LOGFILE
-
+if [[ -f /etc/pve/qemu-server/${distrib_template_prefix}${distrib_template_ver}.conf ]]
+then
+  echo "$TIMESTAMP - INFO - ${distrib_name} ${distrib_template_ver} cloudimage exists, skipped" | tee -a $LOGFILE
+else
+  qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
+  qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &> /dev/null
+  disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
+  qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
+  qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --serial0 socket --vga serial0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --scsi0 ${disk_location},cache=writethrough,ssd=1
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ipconfig0 ip=dhcp
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ciuser ${priviledged_user}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --cipassword ${password}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --agent enabled=1
+  if [ "${keylist_count}" -gt 0 ]
+  then
+    qm set ${distrib_template_prefix}${distrib_template_ver} --sshkey $MYTMPFILE
+  fi
+  qm template ${distrib_template_prefix}${distrib_template_ver}
+  echo "$TIMESTAMP - DONE - ${distrib_name} ${distrib_template_ver} cloudimage template" | tee -a $LOGFILE
+fi
 
 ########################################################################
 #     Ubuntu 22 cloudimage template
 ########################################################################
 
-echo "$TIMESTAMP - START - Ubuntu 22 cloudimage template" | tee -a $LOGFILE
-
+distrib_name="Ubuntu"
 distrib_template_ver="22"
 distrib_template_prefix="90"
 cloudimg_name="jammy-server-cloudimg-amd64.img"
 
-qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
-qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &>/dev/null
-disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
-qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
-qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
-qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
-qm set ${distrib_template_prefix}${distrib_template_ver} --serial0 socket --vga serial0
-qm set ${distrib_template_prefix}${distrib_template_ver} --scsi0 ${disk_location},cache=writethrough,ssd=1
-qm set ${distrib_template_prefix}${distrib_template_ver} --ipconfig0 ip=dhcp
-qm set ${distrib_template_prefix}${distrib_template_ver} --ciuser ${priviledged_user}
-qm set ${distrib_template_prefix}${distrib_template_ver} --cipassword ${password}
-qm set ${distrib_template_prefix}${distrib_template_ver} --agent enabled=1
-qm set ${distrib_template_prefix}${distrib_template_ver} --sshkey /tmp/keys_to_add.pub
-qm template ${distrib_template_prefix}${distrib_template_ver}
+echo "$TIMESTAMP - START - ${distrib_name} ${distrib_template_ver} cloudimage template" | tee -a $LOGFILE
 
-echo "$TIMESTAMP - DONE - Ubuntu 22 cloudimage template" | tee -a $LOGFILE
-
+if [[ -f /etc/pve/qemu-server/${distrib_template_prefix}${distrib_template_ver}.conf ]]
+then
+  echo "$TIMESTAMP - INFO - ${distrib_name} ${distrib_template_ver} cloudimage exists, skipped" | tee -a $LOGFILE
+else
+  qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
+  qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &>/dev/null
+  disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
+  qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
+  qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --serial0 socket --vga serial0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --scsi0 ${disk_location},cache=writethrough,ssd=1
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ipconfig0 ip=dhcp
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ciuser ${priviledged_user}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --cipassword ${password}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --agent enabled=1
+  if [ "${keylist_count}" -gt 0 ]
+  then
+    qm set ${distrib_template_prefix}${distrib_template_ver} --sshkey $MYTMPFILE
+  fi
+  qm template ${distrib_template_prefix}${distrib_template_ver}
+  echo "$TIMESTAMP - DONE - ${distrib_name} ${distrib_template_ver} cloudimage template" | tee -a $LOGFILE
+fi
 
 ########################################################################
 #     Debian 11 cloudimage template
 ########################################################################
 
-echo "$TIMESTAMP - START - Debian 11 cloudimage template" | tee -a $LOGFILE
-
+distrib_name="Debian"
 distrib_template_ver="11"
 distrib_template_prefix="89"
 cloudimg_name="debian-11-genericcloud-amd64.qcow2"
 
-qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
-qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} --format qcow2 &>/dev/null
-disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
-qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
-qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
-qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
-qm set ${distrib_template_prefix}${distrib_template_ver} --serial0 socket --vga serial0
-qm set ${distrib_template_prefix}${distrib_template_ver} --scsi0 ${disk_location},cache=writethrough,ssd=1
-qm set ${distrib_template_prefix}${distrib_template_ver} --ipconfig0 ip=dhcp
-qm set ${distrib_template_prefix}${distrib_template_ver} --ciuser ${priviledged_user}
-qm set ${distrib_template_prefix}${distrib_template_ver} --cipassword ${password}
-qm set ${distrib_template_prefix}${distrib_template_ver} --agent enabled=1
-qm set ${distrib_template_prefix}${distrib_template_ver} --sshkey /tmp/keys_to_add.pub
-qm template ${distrib_template_prefix}${distrib_template_ver}
+echo "$TIMESTAMP - START - ${distrib_name} ${distrib_template_ver} cloudimage template" | tee -a $LOGFILE
 
-echo "$TIMESTAMP - DONE  - Debian 11 cloudimage template" | tee -a $LOGFILE
+if [[ -f /etc/pve/qemu-server/${distrib_template_prefix}${distrib_template_ver}.conf ]]
+then
+  echo "$TIMESTAMP - INFO - ${distrib_name} ${distrib_template_ver} cloudimage exists, skipped" | tee -a $LOGFILE
+else
+  qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
+  qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} --format qcow2 &>/dev/null
+  disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
+  qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
+  qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --serial0 socket --vga serial0
+  qm set ${distrib_template_prefix}${distrib_template_ver} --scsi0 ${disk_location},cache=writethrough,ssd=1
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ipconfig0 ip=dhcp
+  qm set ${distrib_template_prefix}${distrib_template_ver} --ciuser ${priviledged_user}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --cipassword ${password}
+  qm set ${distrib_template_prefix}${distrib_template_ver} --agent enabled=1
+  if [ "${keylist_count}" -gt 0 ]
+  then
+    qm set ${distrib_template_prefix}${distrib_template_ver} --sshkey $MYTMPFILE
+  fi
+  qm template ${distrib_template_prefix}${distrib_template_ver}
+  echo "$TIMESTAMP - DONE  - ${distrib_name} ${distrib_template_ver} cloudimage template" | tee -a $LOGFILE
+fi
 
+
+########################################################################
+#     pfsense ready to fire
+########################################################################
+
+echo "$TIMESTAMP - START - pfsense ready to fire" | tee -a $LOGFILE
+
+if [[ -f /etc/pve/qemu-server/100.conf ]]
+then
+  echo "$TIMESTAMP - INFO - vm 100 already exists, skipped" | tee -a $LOGFILE
+else
+  qm create 100 --memory 1024 --name pfSense --net0 virtio,bridge=vmbr0 --net1 virtio,bridge=vmbr1 --net2 virtio,bridge=vmbr2 --net3 virtio,bridge=vmbr3 --net4 virtio,bridge=vmbr4 --net5 virtio,bridge=vmbr5 --net10 virtio,bridge=vmbr10 --net11 virtio,bridge=vmbr11 --net12 virtio,bridge=vmbr12 --net13 virtio,bridge=vmbr13 --net14 virtio,bridge=vmbr14 --net15 virtio,bridge=vmbr15
+  qm set 100 --scsihw virtio-scsi-pci --virtio0 local-zfs:20
+  qm set 100 --ide2 local:iso/pfSense-CE-2.6.0-RELEASE-amd64.iso,media=cdrom
+  qm set 100 --onboot 1
+  qm set 100 --startup order=1
+  qm set 100 --ostype l26
+  qm set 100 --boot order='ide2;virtio0'
+
+  echo "$TIMESTAMP - DONE  - pfsense ready to fire" | tee -a $LOGFILE
+fi
+
+
+########################################################################
+#     trashVM GUI ready to fire
+########################################################################
+
+echo "$TIMESTAMP - START - trashVM GUI ready to fire" | tee -a $LOGFILE
+
+if [[ -f /etc/pve/qemu-server/101.conf ]]
+then
+  echo "$TIMESTAMP - INFO - Ubuntu 18 cloudimage exists, skipped" | tee -a $LOGFILE
+else
+  qm create 101 --memory 2048 --name mempoule-trashgui --net0 virtio,bridge=vmbr10
+  qm set 101 --scsihw virtio-scsi-pci --virtio0 local-zfs:20
+  qm set 101 --ide2 local:iso/ubuntu-22.10-desktop-amd64.iso,media=cdrom
+  qm set 101 --onboot 1
+  qm set 101 --startup order=1
+  qm set 101 --ostype l26
+  qm set 101 --boot order='ide2;virtio0'
+  qm set 101 --vga qxl
+
+  echo "$TIMESTAMP - DONE  - trashVM GUI ready to fire" | tee -a $LOGFILE
+fi
 
 ########################################################################
 #     mempoule-helper
@@ -486,7 +563,7 @@ echo "$TIMESTAMP - DONE  - Debian 11 cloudimage template" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - mempoule-helper" | tee -a $LOGFILE
 
-wget https://raw.githubusercontent.com/mempoule/toolbox/main/infra/proxmox/mempoule-helper -P /usr/local/bin/
+wget https://raw.githubusercontent.com/mempoule/toolbox/main/infra/proxmox/mempoule-helper -O /usr/local/bin/mempoule-helper
 
 echo "$TIMESTAMP - DONE  - mempoule-helper" | tee -a $LOGFILE
 
@@ -496,7 +573,7 @@ echo "$TIMESTAMP - DONE  - mempoule-helper" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - totp" | tee -a $LOGFILE
 
-wget https://raw.githubusercontent.com/mempoule/toolbox/main/infra/proxmox/totp -P /usr/local/bin/
+wget https://raw.githubusercontent.com/mempoule/toolbox/main/infra/proxmox/totp -O /usr/local/bin/totp
 chmod 700 /usr/local/bin/totp
 
 echo "$TIMESTAMP - DONE  - totp" | tee -a $LOGFILE
@@ -520,46 +597,14 @@ echo "$TIMESTAMP - DONE  - swap disable if is_zfs=1" | tee -a $LOGFILE
 
 
 ########################################################################
-#     pfsense ready to fire
-########################################################################
-
-echo "$TIMESTAMP - START - pfsense ready to fire" | tee -a $LOGFILE
-
-qm create 100 --memory 1024 --name pfSense --net0 virtio,bridge=vmbr0 --net1 virtio,bridge=vmbr1 --net2 virtio,bridge=vmbr2 --net3 virtio,bridge=vmbr3 --net4 virtio,bridge=vmbr4 --net5 virtio,bridge=vmbr5 --net10 virtio,bridge=vmbr10 --net11 virtio,bridge=vmbr11 --net12 virtio,bridge=vmbr12 --net13 virtio,bridge=vmbr13 --net14 virtio,bridge=vmbr14 --net15 virtio,bridge=vmbr15
-qm set 100 --scsihw virtio-scsi-pci --virtio0 local-zfs:20
-qm set 100 --ide2 local:iso/pfSense-CE-2.6.0-RELEASE-amd64.iso,media=cdrom
-qm set 100 --onboot 1
-qm set 100 --startup order=1
-qm set 100 --ostype l26
-qm set 100 --boot order='ide2;virtio0'
-
-echo "$TIMESTAMP - DONE  - pfsense ready to fire" | tee -a $LOGFILE
-
-
-########################################################################
-#     trashVM GUI ready to fire
-########################################################################
-
-echo "$TIMESTAMP - START - trashVM GUI ready to fire" | tee -a $LOGFILE
-
-qm create 101 --memory 2048 --name mempoule-trashgui --net0 virtio,bridge=vmbr10
-qm set 101 --scsihw virtio-scsi-pci --virtio0 local-zfs:20
-qm set 101 --ide2 local:iso/ubuntu-22.10-desktop-amd64.iso,media=cdrom
-qm set 101 --onboot 1
-qm set 101 --startup order=1
-qm set 101 --ostype l26
-qm set 101 --boot order='ide2;virtio0'
-qm set 101 --vga qxl
-
-echo "$TIMESTAMP - DONE  - trashVM GUI ready to fire" | tee -a $LOGFILE
-
-
-########################################################################
 #     Cleaning install temp files
 ########################################################################
 
 echo "$TIMESTAMP - START - Cleaning install temp files" | tee -a $LOGFILE
 
-rm /tmp/keys_to_add.pub &> /dev/null
+if [ "${keylist_count}" -gt 0 ]
+then
+  rm -rf $MYTMPDIR 2>/dev/null
+fi
 
-echo "$TIMESTAMP - STOP - Cleaning install temp files" | tee -a $LOGFILE
+echo "$TIMESTAMP - DONE - Cleaning install temp files" | tee -a $LOGFILE

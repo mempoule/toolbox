@@ -94,7 +94,7 @@ then
   smtp_username=${smtp_username:-noreply@mempoule.fr}
   echo "Please enter smtp password"
   read -sr smtp_password
-  if  [[ ${smtp_password} =~ " " ]] | [[ ${smtp_password} == "" ]]
+  if  [[ ${smtp_password} =~ " " ]] || [[ ${smtp_password} == "" ]]
   then
     echo "Must provide a valid smtp_password, exiting"
     exit
@@ -145,7 +145,7 @@ send_totp() {
   qrencode -o ${MYTMPFILE} "otpauth://totp/PVE:${username}@${host_name}?secret=\${cur_totp}"
   echo -e "<p style=\"font-family: Calibri;font-size: 16px\">Hello ${first_name} ${last_name}<br><br>2FA has just been activated or may have been force-resent by your Administrator.<br><br>Host : ${host_name}<br>Secret key : ${cur_totp}<br><br>For convience, you will find the matching QR code attached to this mail<br><br><p style=\"color:#FF0000;font-size:18px;\">Please delete this mail as soon as you have imported/saved it securely : You are the SOLE responsible of its security.</p>" | mutt -s "${host_name}:${username} - TOTP" -a ${MYTMPFILE} -- ${mail_address}
   echo "$TIMESTAMP - ${username} mail sent" | tee $LOGFILE
-  rm -rf $MYTMPFILE 2>/dev/null
+  rm -rf $MYTMPDIR 2>/dev/null
 }
 
 while IFS= read -r line; do
