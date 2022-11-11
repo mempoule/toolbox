@@ -4,13 +4,12 @@
 #     Priviledged usercheck
 ########################################################################
 
-echo "$TIMESTAMP - Priviledged usercheck"
-
-if [[ $EUID -eq 0 ]] | [[ -z ${SUDO_USER// } ]]
+if [[ $EUID -ne 0 ]] && [[ -z ${SUDO_USER// } ]]
 then
   echo "$TIMESTAMP - Not priviledged user, aborting."
   exit
 fi
+
 
 ########################################################################
 #     vars
@@ -27,7 +26,7 @@ domains_exist=0
 
 total_users=$(grep -c '^user:' /etc/pve/user.cfg)
 mail_users=$(grep '^user:.*.:.*.:.*.:.*.:.*.@.*.\..*.:' /etc/pve/user.cfg)
-admin_list=$(pveum acl list | grep '\/ .*.Administrator\|PVEAdmin\|PVESysAdmin' | cut -d '@' -f1 | rev | cut -d ' ' -f1 | rev)
+admin_list=$(/sbin/pveum acl list | grep '\/ .*.Administrator\|PVEAdmin\|PVESysAdmin' | cut -d '@' -f1 | rev | cut -d ' ' -f1 | rev)
 admin_with_mail=0
 
 
@@ -85,17 +84,17 @@ then
 else
   echo "$TIMESTAMP - Domains.cfg not found, autoconf of mutt and msmtp" | tee $LOGFILE
   domains_exist=0
+fi
 
-  echo "$TIMESTAMP - Domains.cfg not found, autoconf of mutt and msmtp"
-
-  echo "Please enter smtp host [ex5.mail.ovh.net]"
+if  [[ ! -f /etc/Muttrc ]] || [[ ! -f /etc/msmtprc ]]
+then
   read -p "Please enter smtp host [ex5.mail.ovh.net] :" smtp_host
   smtp_host=${smtp_host:-ex5.mail.ovh.net}
   read -p "Please enter smtp username [noreply@mempoule.fr] :" smtp_username
-  smtp_username=${smtp_host:-noreply@mempoule.fr}
-  read -p "Please enter smtp password" smtp_password
+  smtp_username=${smtp_username:-noreply@mempoule.fr}
+  echo "Please enter smtp password"
   read -sr smtp_password
-  if  [[ ${smtp_password} =~ " " ]]
+  if  [[ ${smtp_password} =~ " " ]] | [[ ${smtp_password} == "" ]]
   then
     echo "Must provide a valid smtp_password, exiting"
     exit
@@ -127,6 +126,7 @@ else
   } > /etc/msmtprc
   chmod 640 /etc/msmtprc
 fi
+
 
 ########################################################################
 #    /etc/pve/user.cfg parsing
@@ -206,4 +206,3 @@ echo "--------------------------------------------------------------------------
 echo "$TIMESTAMP - Total Users activated : ${users_activated}"
 echo "$TIMESTAMP - Total Users activated without mail : ${users_activated_nomail}"
 echo "$TIMESTAMP - Total Users already set : ${users_already_set}"
-
