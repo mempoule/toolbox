@@ -38,10 +38,10 @@ else
       echo '   clear && OATHKEYID=$(oathkeygen) && echo -e OATH key ID for $USER: $OATHKEYID && qrencode -t ANSIUTF8 -o - $(echo "otpauth://totp/PVE:$USER@"$(hostname --fqdn)"?secret=$OATHKEYID")'
       echo -e "\nRecovery generation :\n"
       echo -e "   for i in {1..10};do openssl rand -hex 12;done\n"
-      echo -e "user.cfg location\n\n   root@pve1:~# grep -rnw / -e 'MY6G2HZRD6HYCHPG'"
-      echo -e "   /etc/pve/user.cfg:2:user:root@pam:1:0:::mail@yourdomain.com::MY6G2HZRD6HYCHPG:\n"
-      echo -e "Encoding\n"
-      echo -e "   qrencode -o qrcode.png \"otpauth://totp/PVE:root@pve1?secret=\$OATHKEYID\"\n"
+      echo -e "user.cfg location\n\n   root@pve1:~# grep -rnw / -e 'CCCC'"
+      echo -e "   /etc/pve/user.cfg:2:user:root@pam:1:0:::mail@yourdomain.com::CCCC:\n"
+      echo -e "QR emergency console print"
+      echo '  qrencode -t ANSIUTF8 -o - $(echo "otpauth://totp/PVE:$USER@"$(hostname --fqdn)"?secret=CCCC")'
     ;;
     "clone")
       echo -e "\n#############################################################"

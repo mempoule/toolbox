@@ -1,13 +1,29 @@
 #!/bin/bash
 
 ########################################################################
+#     Priviledged user check
+########################################################################
+
+echo "$TIMESTAMP - Priviledged user check" | tee $LOGFILE
+
+if [[ $EUID -eq 0 ]] || [[ -z ${SUDO_USER// } ]]
+then
+  echo "$TIMESTAMP - Not priviledged user, aborting." | tee $LOGFILE
+  exit
+else
+
+########################################################################
 #     vars
 ########################################################################
 
 LOGFILE="/var/log/mempoule-install.log"
 TIMESTAMP=`date "+%Y-%m-%d %H:%M:%S"`
 
-if [ -f "$LOGFILE" ]
+########################################################################
+#     LOGFILE check
+########################################################################
+
+if [[ -f $LOGFILE ]]
 then
   echo "$LOGFILE file found. Aborting"
   exit
@@ -17,7 +33,7 @@ priviledged_user="mempoule"
 github_name="mempoule"
 
 ssh_client=$(who am i|cut -d"(" -f2 |cut -d")" -f1)
-if [ "$(pvesm status | grep -c zfs)" -eq 1 ]
+if [[ $(pvesm status | grep -c zfs) -eq 1 ]]
 then
   local_storage=$(pvesm status | grep zfspool | cut -d " " -f1)
   is_zfs=1
@@ -36,7 +52,7 @@ echo "$TIMESTAMP - START - sources.list update" | tee -a $LOGFILE
 
 sed -i 's/^[:alnum]/# /' /etc/apt/sources.list.d/pve-enterprise.list
 
-if [ "$(grep -c download.proxmox.com /etc/apt/sources.list)" -eq 0 ]
+if [[ $(grep -c download.proxmox.com /etc/apt/sources.list) -eq 0 ]]
 then
   echo "Adding nosubscription pve sources.list for ${distribution_version}"
   {
@@ -69,7 +85,7 @@ echo "$TIMESTAMP - DONE  - update packages list" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - install new packages" | tee -a $LOGFILE
 
-apt-get install curl unzip wget fail2ban htop sudo vim ifupdown2 net-tools conntrack tree screen qrencode -y &> /dev/null
+apt-get install curl unzip wget fail2ban htop sudo vim ifupdown2 net-tools conntrack tree screen qrencode msmtp mutt -y &> /dev/null
 
 echo "$TIMESTAMP - DONE  - install new packages" | tee -a $LOGFILE
 
@@ -79,7 +95,7 @@ echo "$TIMESTAMP - DONE  - install new packages" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - new user" | tee -a $LOGFILE
 
-if ! [ -d "/home/${priviledged_user}" ]
+if ! [[ -d /home/${priviledged_user} ]]
 then
   echo -e "User : ${priviledged_user} non-existent, creating...\n"
   echo "Enter password for new user ${priviledged_user}: "
@@ -258,7 +274,7 @@ chmod 700 /home/${priviledged_user}/.ssh 2>/dev/null
 keylist=$(curl -s https://github.com/${github_name}.keys)
 keylist_count=0
 
-if [[ $keylist == *"ssh-rsa"* ]]
+if [[ $keylist =~ *ssh-rsa* ]]
 then
   while IFS= read -r key
   do
@@ -315,7 +331,7 @@ echo "$TIMESTAMP - START - VMBR autocreate" | tee -a $LOGFILE
 
 for vmbr_id in {1..5}
 do
-  if [ "$(grep -c "vmbr${vmbr_id}" /etc/network/interfaces)" -eq 0 ]
+  if [[ $(grep -c "vmbr${vmbr_id}" /etc/network/interfaces) -eq 0 ]]
   then
     echo "YAPA ${vmbr_id}"
     {
@@ -329,7 +345,7 @@ do
     } >> /etc/network/interfaces
   fi
 
-  if [ "$(grep -c "vmbr1${vmbr_id}" /etc/network/interfaces)" -eq 0 ]
+  if [[ $(grep -c "vmbr1${vmbr_id}" /etc/network/interfaces)" -eq 0 ]]
   then
     echo "YAPA 1${vmbr_id}"
     {
@@ -469,14 +485,20 @@ echo "$TIMESTAMP - DONE  - Debian 11 cloudimage template" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - mempoule-helper" | tee -a $LOGFILE
 
-wget https://raw.githubusercontent.com/mempoule/toolbox/main/infra/proxmox/mempoule-helper -P /usr/bin/
+wget https://raw.githubusercontent.com/mempoule/toolbox/main/infra/proxmox/mempoule-helper -P /usr/local/bin/
 
 echo "$TIMESTAMP - DONE  - mempoule-helper" | tee -a $LOGFILE
 
 ########################################################################
-#     oauth
+#     totp
 ########################################################################
 
+echo "$TIMESTAMP - START - totp" | tee -a $LOGFILE
+
+wget https://raw.githubusercontent.com/mempoule/toolbox/main/infra/proxmox/totp -P /usr/local/bin/
+chmod 700 /usr/local/bin/totp
+
+echo "$TIMESTAMP - DONE  - totp" | tee -a $LOGFILE
 
 ########################################################################
 #     swap disable if is_zfs=1
@@ -484,7 +506,7 @@ echo "$TIMESTAMP - DONE  - mempoule-helper" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - swap disable if is_zfs=1" | tee -a $LOGFILE
 
-if [ "${is_zfs}" -eq 1 ]
+if [[ ${is_zfs} -eq 1 ]]
 then
   echo "vm.swappiness = 0" >> /etc/sysctl.conf
   sed -i '/swap/ s/^#*/# /' /etc/fstab
