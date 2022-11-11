@@ -384,6 +384,7 @@ echo "$TIMESTAMP - START - ${distrib_name} ${distrib_template_ver} cloudimage te
 if [[ -f /etc/pve/qemu-server/${distrib_template_prefix}${distrib_template_ver}.conf ]]
 then
   echo "$TIMESTAMP - INFO - ${distrib_name} ${distrib_template_ver} cloudimage exists, skipped" | tee -a $LOGFILE
+  # Destroy not advised, unless deleting related disks on a loop with zfs destroy -f rpool/data/vm-9018-disk-5"
 else
   qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
   qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &> /dev/null
