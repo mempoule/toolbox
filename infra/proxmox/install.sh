@@ -1,16 +1,17 @@
 #!/bin/bash
 
 ########################################################################
-#     Priviledged user check
+#     Priviledged usercheck
 ########################################################################
 
-echo "$TIMESTAMP - Priviledged user check" | tee $LOGFILE
+echo "$TIMESTAMP - Priviledged usercheck"
 
-if [[ $EUID -eq 0 ]] || [[ -z ${SUDO_USER// } ]]
+if [[ $EUID -eq 0 ]] | [[ -z ${SUDO_USER// } ]]
 then
-  echo "$TIMESTAMP - Not priviledged user, aborting." | tee $LOGFILE
+  echo "$TIMESTAMP - Not priviledged user, aborting."
   exit
-else
+fi
+
 
 ########################################################################
 #     vars
