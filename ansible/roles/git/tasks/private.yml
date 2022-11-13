@@ -1,3 +1,11 @@
 - name: Test private
   debug:
     msg: "Private"
+
+- name: Test private
+  debug:
+    msg: "Private"
+
+- name: Test private
+  debug:
+    msg: "Private"
