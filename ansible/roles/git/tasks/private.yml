@@ -1,6 +1,8 @@
 - name: "Git - PRIVATE - check if SSH key for {{ git_name }} exists"
   stat:
     path: "/home/{{ ruser }}/.ssh/{{ git_name }}"
+  become: true
+  become_user: "{{ ruser }}"
   register: git_sshkey
 
 - name: "Git - PRIVATE - generate SSH key for {{ git_name }}"
@@ -20,6 +22,7 @@
     path: "/home/{{ ruser }}/.ssh/{{ git_name }}"
     mode: '0600'
   become: true
+  become_user: "{{ ruser }}"
   when:
     - not git_sshkey.stat.exists
 
@@ -27,13 +30,23 @@
   shell: "cat /home/{{ ruser }}/.ssh/{{ git_name }}.pub"
   register: guestpub
   become: true
+  become_user: "{{ ruser }}"
 
-- name: "Git - Show the guest pub for {{ git_name }}"
+- name: "Git - PRIVATE - Show current pubkey for {{ git_name }} "
   debug:
     msg: "{{ guestpub.stdout }}"
   become: true
+  become_user: "{{ ruser }}"
 
-- name: "Git - Pause until sshkey is added to the deploy keys on GH - {{ git_name }}"
+- name: "Git - PRIVATE - Pause (Deploy key needed) for {{ git_name }}"
   pause:
     prompt: "Make sure ssh key is added to deploy keys before going further"
 
+- name: "Git - PRIVATE - Clone {{ git_name }} repo"
+  git:
+    repo: "git@github.com:{{ ruser }}/{{ git_name }}.git"
+    dest: "/home/{{ ruser }}/{{ git_name }}"
+    key_file: "/home/{{ ruser }}/.ssh/{{ git_name }}"
+    force: yes
+  become: true
+  become_user: "{{ ruser }}"
