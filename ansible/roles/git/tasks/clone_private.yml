@@ -54,14 +54,6 @@
   when:
    - dest_path is not defined
 
-- name: "Git - PRIVATE - Clone {{ git_name }} repo - commander_only"
-  git:
-    repo: "git@github.com:{{ ruser }}/{{ git_name }}.git"
-    dest: "/home/{{ ruser }}/{{ git_name }}"
-    key_file: "/home/{{ ruser }}/.ssh/commander"
-    force: yes
-  become: true
-
 - name: "Git - PRIVATE - Clone {{ git_name }} repo - Specific path"
   git:
     repo: "git@github.com:{{ ruser }}/{{ git_name }}.git"
