@@ -3,4 +3,3 @@
     repo: "{{ url_repo }}"
     dest: "/home/{{ ruser }}/{{ git_name }}"
     force: yes
-  when: type is defined and type == "public"
