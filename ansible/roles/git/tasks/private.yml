@@ -8,18 +8,18 @@
   become: true
   become_user: "{{ ruser }}"
 
-- name: "Git - PRIVATE - chmod ssh key"
+- name: "Git - PRIVATE - chmod ssh key for {{ git_name }}"
   file:
     path: "/home/{{ ruser }}/.ssh/{{ git_name }}"
     mode: '0600'
   become: true
 
-- name: "Git - PRIVATE - SSH pub to var
+- name: "Git - PRIVATE - SSH pub to var for {{ git_name }}"
   shell: "cat /home/{{ ruser }}/.ssh/{{ git_name }}"
   register: guestpub
   become: true
 
-- name: Git - Show the guest pub
+- name: "Git - Show the guest pub for {{ git_name }}"
   debug:
     msg: "{{ guestpub.stdout }}"
   become: true
