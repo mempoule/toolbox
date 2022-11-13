@@ -18,17 +18,12 @@
     sudo apt-get update
     sudo apt-get install ansible -y
 
-### Clone private version (optional)
+
+### Generate Commander SSH key set and clone toolbox_private
 
     cd ~/toolbox/infra/commander
-    chmod +x install.sh
-    sudo ./install.sh
+    ./ssh_key_gen.sh
 
->   Note : During the process, you will get a new SSH Key, it is **mandatory** to add it to your github list of approved [SSH Keys](https://github.com/settings/keys). Otherwise you won't be able to clone this repo and finish the installation.
-
-### Create the vault password file
-
-    echo "Theultrasecurepassword" > ~/.vault_pass
 
 #### Launch the playbook
 

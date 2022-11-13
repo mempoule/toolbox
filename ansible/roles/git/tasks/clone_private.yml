@@ -4,7 +4,6 @@
   become: true
   become_user: "{{ ruser }}"
   register: git_sshkey
-  when: git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - generate SSH key for {{ git_name }}"
   openssh_keypair:
@@ -16,7 +15,6 @@
   become: true
   become_user: "{{ ruser }}"
   when:
-    - git_name != "toolbox_private"
     - not git_sshkey.stat.exists
 
 
@@ -27,7 +25,6 @@
   become: true
   become_user: "{{ ruser }}"
   when:
-    - git_name != "toolbox_private"
     - not git_sshkey.stat.exists
 
 - name: "Git - PRIVATE - SSH pub to var for {{ git_name }}"
@@ -35,22 +32,16 @@
   register: guestpub
   become: true
   become_user: "{{ ruser }}"
-  when:
-    - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - Show current pubkey for {{ git_name }} "
   debug:
     msg: "{{ guestpub.stdout }}"
   become: true
   become_user: "{{ ruser }}"
-  when:
-    - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - Pause (Deploy key needed) for {{ git_name }}"
   pause:
     prompt: "Make sure ssh key is added to deploy keys before going further"
-  when:
-    - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - Clone {{ git_name }} repo"
   git:
@@ -62,7 +53,6 @@
   become_user: "{{ ruser }}"
   when:
    - dest_path is not defined
-   - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - Clone {{ git_name }} repo - commander_only"
   git:
@@ -71,9 +61,6 @@
     key_file: "/home/{{ ruser }}/.ssh/commander"
     force: yes
   become: true
-  become_user: "{{ ruser }}"
-  when:
-   - git_name == "toolbox_private"
 
 - name: "Git - PRIVATE - Clone {{ git_name }} repo - Specific path"
   git:
@@ -85,7 +72,6 @@
   become_user: "{{ ruser }}"
   register: clone_status
   when:
-   - git_name != "toolbox_private"
    - dest_path is defined
   retries: 10
   delay: 20
