@@ -4,6 +4,7 @@
   become: true
   become_user: "{{ ruser }}"
   register: git_sshkey
+  when: git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - generate SSH key for {{ git_name }}"
   openssh_keypair:
@@ -16,6 +17,7 @@
   become_user: "{{ ruser }}"
   when:
     - not git_sshkey.stat.exists
+    - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - chmod ssh key for {{ git_name }}"
   file:
@@ -25,22 +27,30 @@
   become_user: "{{ ruser }}"
   when:
     - not git_sshkey.stat.exists
+    - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - SSH pub to var for {{ git_name }}"
   shell: "cat /home/{{ ruser }}/.ssh/{{ git_name }}.pub"
   register: guestpub
   become: true
   become_user: "{{ ruser }}"
+  when:
+    - is_commander is not defined
+    - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - Show current pubkey for {{ git_name }} "
   debug:
     msg: "{{ guestpub.stdout }}"
   become: true
   become_user: "{{ ruser }}"
+  when:
+    - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - Pause (Deploy key needed) for {{ git_name }}"
   pause:
     prompt: "Make sure ssh key is added to deploy keys before going further"
+  when:
+    - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - Clone {{ git_name }} repo"
   git:
@@ -50,7 +60,20 @@
     force: yes
   become: true
   become_user: "{{ ruser }}"
-  when: dest_path is not defined
+  when:
+   - dest_path is not defined
+   - git_name != "toolbox_private"
+
+- name: "Git - PRIVATE - Clone {{ git_name }} repo - commander_only"
+  git:
+    repo: "git@github.com:{{ ruser }}/{{ git_name }}.git"
+    dest: "/home/{{ ruser }}/{{ git_name }}"
+    key_file: "/home/{{ ruser }}/.ssh/commander.pub"
+    force: yes
+  become: true
+  become_user: "{{ ruser }}"
+  when:
+   - git_name == "toolbox_private"
 
 - name: "Git - PRIVATE - Clone {{ git_name }} repo - Specific path"
   git:
@@ -61,7 +84,9 @@
   become: true
   become_user: "{{ ruser }}"
   register: clone_status
-  when: dest_path is defined
+  when:
+   - dest_path is defined
+   - git_name != "toolbox_private"
   retries: 10
   delay: 20
   until: clone_status.changed
