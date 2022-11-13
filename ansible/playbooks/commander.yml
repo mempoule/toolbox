@@ -1,7 +1,7 @@
 - hosts: mempoule_commander_adm
   roles:
-    - role: apt
-    - role: install
-    - {role: git, git_name: "toolbox_private", url_repo: "https://github.com/mempoule/toolbox_private.git", private_git: True}
+#    - role: apt
+#    - role: install
+    - { role: git, git_name: "toolbox_private", url_repo: "https://github.com/mempoule/toolbox_private.git", private_git: True }
   vars:
     ruser: mempoule
