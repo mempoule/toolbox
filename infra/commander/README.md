@@ -20,7 +20,7 @@
 
 ### Clone private version (optional)
 
-    cd ~/toolbox/infrastructure/commander
+    cd ~/toolbox/infra/commander
     chmod +x install.sh
     sudo ./install.sh
 

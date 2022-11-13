@@ -1,0 +1,10 @@
+- import_tasks: public.yml
+  when:
+  - git_name is defined
+  - private_git is not defined or
+    private_git is defined and private_git
+
+- import_tasks: private.yml
+  when:
+  - git_name is defined
+  - private_git is defined and private_git

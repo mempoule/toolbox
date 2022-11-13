@@ -160,7 +160,7 @@ mempoule_private
 
 ### nginx_private
 
-#### Place the config files in the private nginx folder on the commander : `/home/<commander_user>/<project_name>/nginx`
+#### Place the config files in the private nginx folder on the commander : `/home/<commander_user>/toolbox_private/<project_name>/nginx`
 
 > **Info :** An ultra basic version will be shown under each file to ease understanding, **DO NOT use it in production**
 
