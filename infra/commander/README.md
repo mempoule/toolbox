@@ -9,7 +9,7 @@
 
 ## Installation
 
-### Clone repo
+### Clone & config repo
 
     git clone git@github.com:mempoule/toolbox.git
     git config user.name "mempoule"
@@ -20,7 +20,7 @@
 ### Generate Commander SSH key set and clone toolbox_private
 
     cd ~/toolbox/infra/commander
-    ./ssh_key_gen.sh
+    sudo ./ssh_key_gen.sh
 
 ### Install Ansible
 
