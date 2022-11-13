@@ -16,8 +16,9 @@
   become: true
   become_user: "{{ ruser }}"
   when:
-    - not git_sshkey.stat.exists
     - git_name != "toolbox_private"
+    - not git_sshkey.stat.exists
+
 
 - name: "Git - PRIVATE - chmod ssh key for {{ git_name }}"
   file:
@@ -26,8 +27,8 @@
   become: true
   become_user: "{{ ruser }}"
   when:
-    - not git_sshkey.stat.exists
     - git_name != "toolbox_private"
+    - not git_sshkey.stat.exists
 
 - name: "Git - PRIVATE - SSH pub to var for {{ git_name }}"
   shell: "cat /home/{{ ruser }}/.ssh/{{ git_name }}.pub"
@@ -35,7 +36,6 @@
   become: true
   become_user: "{{ ruser }}"
   when:
-    - is_commander is not defined
     - git_name != "toolbox_private"
 
 - name: "Git - PRIVATE - Show current pubkey for {{ git_name }} "
@@ -85,8 +85,9 @@
   become_user: "{{ ruser }}"
   register: clone_status
   when:
-   - dest_path is defined
    - git_name != "toolbox_private"
+   - dest_path is defined
+
   retries: 10
   delay: 20
   until: clone_status.changed
