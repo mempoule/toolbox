@@ -1,3 +1,6 @@
-- name: Test public
-  debug:
-    msg: "Public {{url_repo}} "
+- name: "Git - PUBLIC REPO clone {{ git_name }}"
+  git:
+    repo: "{{ url_repo }}"
+    dest: "/home/{{ ruser }}/{{ dest_path }}"
+    force: yes
+  when: type is defined and type == "public"

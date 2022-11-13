@@ -1,5 +1,6 @@
 - import_tasks: public.yml
   when:
+  - git_name is defined
   - url_repo is defined
   - private_git is not defined or
     private_git is defined and not private_git
@@ -7,4 +8,5 @@
 - import_tasks: private.yml
   when:
   - url_repo is defined
+  - git_name is defined
   - private_git is defined and private_git
