@@ -1,6 +1,6 @@
 - name: "Git - PUBLIC REPO clone {{ git_name }}"
   git:
     repo: "{{ url_repo }}"
-    dest: "/home/{{ ruser }}/{{ dest_path }}"
+    dest: "/home/{{ ruser }}/{{ git_name }}"
     force: yes
   when: type is defined and type == "public"
