@@ -60,4 +60,8 @@
     force: yes
   become: true
   become_user: "{{ ruser }}"
+  register: clone_status
   when: dest_path is defined
+  retries: 10
+  delay: 20
+  until: clone_status.changed
