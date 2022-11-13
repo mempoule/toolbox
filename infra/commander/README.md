@@ -11,7 +11,7 @@
 
 ### Clone repo
 
-    git clone https://github.com/mempoule/toolbox.git
+    git clone git@github.com:mempoule/toolbox.git
 
 ### Install Ansible
 
