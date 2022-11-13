@@ -1,21 +1,30 @@
+- name: "Git - PRIVATE - check if SSH key for {{ git_name }} exists"
+  stat:
+    path: "/home/{{ ruser }}/.ssh/{{ git_name }}"
+  register: git_sshkey
+
 - name: "Git - PRIVATE - generate SSH key for {{ git_name }}"
   openssh_keypair:
-    path: "~/.ssh/{{ git_name }}"
+    path: "/home/{{ ruser }}/.ssh/{{ git_name }}"
     type: rsa
     size: 2048
     state: present
     force: no
   become: true
   become_user: "{{ ruser }}"
+  when:
+    - not git_sshkey.stat.exists
 
 - name: "Git - PRIVATE - chmod ssh key for {{ git_name }}"
   file:
     path: "/home/{{ ruser }}/.ssh/{{ git_name }}"
     mode: '0600'
   become: true
+  when:
+    - not git_sshkey.stat.exists
 
 - name: "Git - PRIVATE - SSH pub to var for {{ git_name }}"
-  shell: "cat /home/{{ ruser }}/.ssh/{{ git_name }}"
+  shell: "cat /home/{{ ruser }}/.ssh/{{ git_name }}.pub"
   register: guestpub
   become: true
 
