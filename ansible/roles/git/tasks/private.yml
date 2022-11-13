@@ -33,3 +33,7 @@
     msg: "{{ guestpub.stdout }}"
   become: true
 
+- name: "Git - Pause until sshkey is added to the deploy keys on GH - {{ git_name }}"
+  pause:
+    prompt: "Make sure ssh key is added to deploy keys before going further"
+
