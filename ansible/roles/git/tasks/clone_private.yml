@@ -68,7 +68,7 @@
   git:
     repo: "git@github.com:{{ ruser }}/{{ git_name }}.git"
     dest: "/home/{{ ruser }}/{{ git_name }}"
-    key_file: "/home/{{ ruser }}/.ssh/commander.pub"
+    key_file: "/home/{{ ruser }}/.ssh/commander"
     force: yes
   become: true
   become_user: "{{ ruser }}"
@@ -87,7 +87,6 @@
   when:
    - git_name != "toolbox_private"
    - dest_path is defined
-
   retries: 10
   delay: 20
   until: clone_status.changed
