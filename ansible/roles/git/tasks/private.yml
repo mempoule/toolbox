@@ -1,11 +1,26 @@
-- name: Test private
-  debug:
-    msg: "Private"
+- name: "Git - PRIVATE - generate SSH key for {{ git_name }}"
+  openssh_keypair:
+    path: "~/.ssh/{{ git_name }}"
+    type: rsa
+    size: 2048
+    state: present
+    force: no
+  become: true
+  become_user: "{{ ruser }}"
 
-- name: Test private
-  debug:
-    msg: "Private"
+- name: "Git - PRIVATE - chmod ssh key"
+  file:
+    path: "/home/{{ ruser }}/.ssh/{{ git_name }}"
+    mode: '0600'
+  become: true
 
-- name: Test private
+- name: "Git - PRIVATE - SSH pub to var
+  shell: "cat /home/{{ ruser }}/.ssh/{{ git_name }}"
+  register: guestpub
+  become: true
+
+- name: Git - Show the guest pub
   debug:
-    msg: "Private"
+    msg: "{{ guestpub.stdout }}"
+  become: true
+

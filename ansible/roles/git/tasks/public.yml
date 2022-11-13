@@ -1,11 +1,11 @@
-- name: "Git - PUBLIC REPO clone {{ git_name }}"
+- name: "Git - PUBLIC - clone {{ git_name }}"
   git:
     repo: "{{ url_repo }}"
     dest: "/home/{{ ruser }}/{{ git_name }}"
     force: yes
   when: dest_path is not defined
 
-- name: "Git - PUBLIC REPO clone {{ git_name }} - Specific path"
+- name: "Git - PUBLIC - clone {{ git_name }} - Specific path"
   git:
     repo: "{{ url_repo }}"
     dest: "/home/{{ ruser }}/{{ dest_path }}"
