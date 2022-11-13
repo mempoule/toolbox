@@ -1,6 +1,6 @@
 - hosts: mempoule_rev_adm
   roles:
 #    - role: nginx_private
-    - role: git
+    - { role: git, url_repo: "https://github.com/tias/xinput_calibrator.git" }
   vars:
     ruser: mempoule
