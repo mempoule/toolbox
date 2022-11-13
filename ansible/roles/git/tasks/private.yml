@@ -50,3 +50,14 @@
     force: yes
   become: true
   become_user: "{{ ruser }}"
+  when: dest_path is not defined
+
+- name: "Git - PRIVATE - Clone {{ git_name }} repo - Specific path"
+  git:
+    repo: "git@github.com:{{ ruser }}/{{ git_name }}.git"
+    dest: "/home/{{ ruser }}/{{ dest_path }}"
+    key_file: "/home/{{ ruser }}/.ssh/{{ git_name }}"
+    force: yes
+  become: true
+  become_user: "{{ ruser }}"
+  when: dest_path is defined
