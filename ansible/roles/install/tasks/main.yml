@@ -112,7 +112,7 @@
 - name: Install - AdministrativeUser - get content of authorized_keys if not empty
   slurp:
     src: "/home/{{ ruser }}/.ssh/authorized_keys"
-  register: mounts
+  register: gitkeys 
 
 - name: "Base - AdministrativeUser - Add {{ ruser }} GitHub ssh keys"
   lineinfile:
@@ -122,7 +122,7 @@
     create: true
     owner: "{{ ruser }}"
     group: "{{ ruser }}"
-  when: item.key not in mounts['content'] | b64decode
+  when: item.key not in gitkeys['content'] | b64decode
   with_items: "{{ ghkeys.content }}"
   become: true
 
