@@ -13,6 +13,7 @@
     jump: "{{ item.jump }}"
     rule_num: "{{ item.rule_num }}"
     comment: "{{ item.comment }}"
+    ction: insert
   become: true
   with_items:
     - "{{ rules[ruleset] }}"
