@@ -26,6 +26,10 @@
     sudo apt-get update
     sudo apt-get install ansible -y
 
+### Vault Password
+
+    echo "Thedarkpassword" > ~/.vault_pass
+
 #### Launch the playbook
 
     cd ~/toolbox/ansible
