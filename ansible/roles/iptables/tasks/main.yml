@@ -1,0 +1,8 @@
+- include_vars:
+    file: "rules.json"
+    name: vars_iptables
+
+- name: debug var
+  debug:
+    msg: {{ vars_iptables }}
+
