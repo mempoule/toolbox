@@ -2,7 +2,7 @@
   roles:
 #    - role: nginx_private
 #    - { role: git, git_name: "testpublic", url_repo: "https://github.com/mempoule/testpublic.git" }
-    - role: fw
+    - role: iptables
   vars:
     ruser: mempoule
 
