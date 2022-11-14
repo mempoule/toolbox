@@ -2,7 +2,38 @@
   include_vars:
     file: vars/rules.json
     name: rules
+  when: ruleset is defined
 
-- name: debug var
-  debug:
-    msg: "{{ rules[ruleset] }}"
+- name: "Iptables - ruleset {{ ruleset }} - Add rules"
+  iptables:
+    chain: "{{ item.chain }}"
+    source: "{{ item.source }}"
+    destination_port: "{{ item.port }}"
+    protocol: "{{ item.protocol }}"
+    jump: "{{ item.jump }}"
+    rule_num: "{{ item.rule_num }}"
+    comment: "{{ item.comment }}"
+  become: true
+  with_items:
+    - "{{ rules[ruleset] }}"
+  when: ruleset is defined and rules[ruleset]
+
+- name: "Iptables - ruleset {{ ruleset }} - Stop fail2ban"
+  service:
+    name: fail2ban
+    state: stopped
+  become: true
+
+- name: "Iptables - ruleset {{ ruleset }} - Save new rules"
+  community.general.iptables_state:
+    ip_version: ipv4
+    table: filter
+    state: saved
+    path: /etc/iptables/rules.v4
+  become: true
+
+- name: "FW_{{ action }} - Start fail2ban"
+  service:
+    name: fail2ban
+    state: started
+  become: true

@@ -7,7 +7,7 @@
       "port": 8096,
       "protocol": "tcp",
       "jump": "ACCEPT",
-      rule_num: "1",
+      "rule_num": 1,
       "comment": "test rule 1"
     },
     {
@@ -16,7 +16,7 @@
       "port": 8920,
       "protocol": "tcp",
       "jump": "ACCEPT",
-      rule_num: "2"
+      "rule_num": 2,
       "comment": "test rule 2"
     }
   ]
