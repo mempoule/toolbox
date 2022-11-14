@@ -12,7 +12,6 @@
 ### Clone & config repo
 
     git clone git@github.com:mempoule/toolbox.git
-    git config user.name "mempoule"
     cd ~/toolbox
     git config user.name "mempoule"
     git config user.email "115656864+mempoule@users.noreply.github.com"
