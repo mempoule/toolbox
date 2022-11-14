@@ -1,8 +1,10 @@
-- include_vars:
+- name: Iptables - Include iptables json file.
+  include_vars:
     file: "{{ lookup('file', 'vars/rules.json') }}"
     name: vars_iptables
 
 - name: debug var
   debug:
     msg: "{{ vars_iptables }}"
+
 
