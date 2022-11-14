@@ -1,5 +1,5 @@
 - include_vars:
-    file: "rules.json"
+    file: "{{ lookup('file', 'vars/rules.json') }}"
     name: vars_iptables
 
 - name: debug var
