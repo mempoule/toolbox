@@ -4,5 +4,5 @@
 
 - name: debug var
   debug:
-    msg: {{ vars_iptables }}
+    msg: "{{ vars_iptables }}"
 
