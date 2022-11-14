@@ -1,3 +1,3 @@
 [piticker]
-192.168.20.132 ansible_host=192.168.20.132 target_hostname=piticker ansible_ssh_user=mempoule ansible_ssh_pass=kaka ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+192.168.20.132 ansible_host=192.168.20.132 target_hostname=piticker ansible_ssh_user=mempoule ansible_ssh_pass=kakaka ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 

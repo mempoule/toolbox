@@ -398,12 +398,6 @@
   when: not hostname_already_present.changed
   become: true
 
-- name: Install - SysTweaks - Reboot post Hostname Change
-  reboot:
-    reboot_timeout: 300
-  when: hostname_changed.changed and is_commander is not defined
-  become: true
-
 - name: Install - SysTweaks - Cloudinit purge
   apt:
     name: cloud-init
@@ -416,6 +410,12 @@
   file:
     path: /etc/cloud
     state: absent
+  become: true
+
+- name: Install - SysTweaks - Reboot post Hostname Change
+  reboot:
+    reboot_timeout: 300
+  when: hostname_changed.changed and is_commander is not defined
   become: true
 
 - name: Install - SysTweaks - Waiting machine restart
