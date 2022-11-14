@@ -1,0 +1,10 @@
+dtparam=spi=on
+dtparam=audio=on
+disable_touchscreen=0
+[pi4]
+dtoverlay=vc4-fkms-v3d
+max_framebuffers=2
+
+[all]
+dtoverlay=rpi-display,speed=32000000,rotate=180
+

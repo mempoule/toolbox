@@ -1,3 +1,180 @@
-- name: test
-  debug:
-    msg: "mfdlflm"
+- include_vars:
+    file: "wifi.json"
+    name: var_wifi
+
+- name: Piticker - Install required packages
+  apt:
+    pkg:
+    - upower
+    - libtool
+    - x11proto-input-dev
+    - x11proto-input-dev
+    - libx11-dev
+    - libxext-dev
+    - libxi-dev
+    - nginx
+    - unclutter
+  become: true
+
+- name: Piticker - Reboot
+  reboot:
+    reboot_timeout: 60
+  become: True
+
+- name: Piticker - pip3 force upgrade
+  pip: 
+    name: pip
+    executable: pip3
+    state: latest
+  become: true
+
+- name: Piticker - virtualenv force upgrade
+  pip:
+    name: virtualenv
+    executable: pip3
+    state: latest
+  become: true
+
+- name: Piticker - xinput_calibrator make 
+  shell: |
+    cd /home/{{ ruser}}/xinput_calibrator/
+    ./autogen.sh
+    ./configure
+    make
+    make install
+  become: true
+
+- name: Piticker - raspi_config - do_hostname
+  # https://github.com/raspberrypi-ui/rc_gui/blob/master/src/rc_gui.c#L23-L70
+  become: true
+  command: raspi-config nonint do_hostname 'piticker'
+
+- name: Piticker - raspi_config - activate ssh
+  become: true
+  command: raspi-config nonint do_ssh 0
+
+- name: Piticker - raspi_config - activate spi
+  become: true
+  command: raspi-config nonint do_spi 0
+
+- name: Piticker - raspi_config - activate gpio
+  become: true
+  command: raspi-config nonint do_rgpio 0
+
+- name: Piticker - raspi_config - disable blanking
+  become: true
+  command: raspi-config nonint do_blanking 1
+
+- name: Piticker - raspi_config - keyboard layout
+  become: true
+  command: raspi-config nonint do_configure_keyboard fr
+
+- name: Piticker - raspi_config - wifi_country
+  become: true
+  command: raspi-config nonint do_wifi_country FR
+
+- name: Piticker - Update wpa_supplicant file
+  become: true
+  template:
+    src: templates/wpa_supplicant.conf
+    dest: /etc/wpa_supplicant/wpa_supplicant.conf
+  vars:
+    wifi_country: "{{ var_wifi['wifi_country'] }}"
+    wifi_ssid: "{{ var_wifi['wifi_ssid'] }}"
+    wifi_password: "{{ var_wifi['wifi_password'] }}"
+
+- name: Piticker - copy rpi-displaydtbo
+  copy:
+    src: vars/rpi-display.dtbo
+    dest: "/boot/overlays/rpi-display.dtbo"
+    mode: 0755
+  become: true
+
+- name: Piticker - copy config.txt
+  copy:
+    src: vars/config.txt
+    dest: "/boot/config.txt"
+    mode: 0755
+  become: true
+
+- name: Piticker - append fbcon=map:10 fbcon=font:VGA8x8 logo.nologo
+  lineinfile:
+    path: "/boot/cmdline.txt"
+    backrefs: yes
+    regexp: "^(.*PARTUUID*.*)$"
+    line: '\1 fbcon=map:10 fbcon=font:VGA8x8 logo.nologo'
+  become: true
+
+- name: Piticker - hide cursor at lxde autostart
+  lineinfile:
+    path: "/etc/xdg/lxsession/LXDE-pi/autostart"
+    line: 'unclutter -idle 0'
+  become: true
+
+- name: Piticker - fb1 in 99-fbturbo.conf
+  replace:
+    path: "/usr/share/X11/xorg.conf.d/99-fbturbo.conf"
+    regexp: 'fb0'
+    replace: 'fb1'
+  become: true
+
+- name: Piticker - Remove Piwiz
+  apt:
+    pkg:
+    - piwiz
+    - zenify
+    state: absent
+  become: true
+
+- name: "Piticker - change autologin to {{ ruser }}"
+  lineinfile:
+    path: "/etc/lightdm/lightdm.conf"
+    regexp: '^autologin-user='
+    line: "autologin-user={{ ruser }}"
+  become: true
+
+- name: "Piticker - change autologin to {{ ruser }}"
+  replace:
+    path: "/etc/systemd/system/getty@tty1.service.d/autologin.conf"
+    regexp: 'pi'
+    replace: "{{ ruser }}"
+  become: true
+
+- name: Piticker - Reload getty@tty1.service
+  systemd:
+    name: getty@tty1
+    state: restarted
+    daemon_reload: yes
+  become: true
+
+- name: Piticker - PythonLibs - requests
+  pip:
+    name: requests
+    virtualenv: "/home/{{ ruser }}/piticker/venv"
+  become: true
+  become_user: "{{ ruser }}"
+
+- name: Piticker - PythonLibs - psutil
+  pip:
+    name: psutil
+    virtualenv: "/home/{{ ruser }}/piticker/venv"
+  become: true
+  become_user: "{{ ruser }}"
+
+- name: Piticker - Delete pi user
+  user:
+    name: pi
+    state: absent
+    remove: yes
+    force: yes
+  become: true
+
+- name: Piticker - cron - autostart Chromium
+  cron :
+    name: "autostart chromium"
+    job: "$HOME/ktpi/venv/bin/python $HOME/ktpi/autorefresh_service.py"
+    minute: "*"
+  become: true
+  become_user: "{{ ruser }}"
+
+
