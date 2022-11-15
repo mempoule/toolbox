@@ -1,8 +1,8 @@
 - name: "Gunicorn - {{ app_folder }}"
   meta: end_host
   when:
-  - app_folder is defined
-  - app_name is defined
+  - app_folder is not defined
+  - app_name is not defined
 
 - name: "Gunicorn - {{ app_folder }} - ensure local reverse is setup"
   apt:
