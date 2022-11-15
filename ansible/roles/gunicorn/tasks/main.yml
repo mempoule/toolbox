@@ -6,7 +6,11 @@
 
 - name: Gunicorn - {{ app_folder }} - Initiate virtualenv"
   pip:
+    requirements: requirements.txt
     virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
+
+- name: "Gunicorn - {{ app_folder }}"
+  meta: end_host
 
 - name: "Gunicorn - {{ app_folder }} - ensire nginx is installed"
   apt:
