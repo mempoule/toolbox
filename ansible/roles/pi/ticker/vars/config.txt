@@ -7,4 +7,5 @@ max_framebuffers=2
 
 [all]
 dtoverlay=rpi-display,speed=32000000,rotate=180
-
+# hdmi_force_hotplug=1
+# hdmi_drive=2

@@ -2,6 +2,7 @@
     file: "wifi.json"
     name: var_wifi
 
+
 - name: Piticker - Install required packages
   apt:
     pkg:
@@ -14,7 +15,9 @@
     - libxi-dev
     - nginx
     - unclutter
+    - xserver-xorg-video-fbturbo
   become: true
+
 
 - name: Piticker - Reboot
   reboot:
@@ -43,6 +46,7 @@
     make
     make install
   become: true
+
 
 - name: Piticker - raspi_config - do_hostname
   # https://github.com/raspberrypi-ui/rc_gui/blob/master/src/rc_gui.c#L23-L70
@@ -111,11 +115,17 @@
     line: 'unclutter -idle 0'
   become: true
 
-- name: Piticker - fb1 in 99-fbturbo.conf
-  replace:
-    path: "/usr/share/X11/xorg.conf.d/99-fbturbo.conf"
-    regexp: 'fb0'
-    replace: 'fb1'
+- name: Remove file (delete file)
+  ansible.builtin.file:
+    path: /usr/share/X11/xorg.conf.d/99-fbturbo.~
+    state: absent
+  become: true
+
+- name: Piticker - copy 99-fbturbo.conf
+  copy:
+    src: vars/99-fbturbo.conf
+    dest: "/usr/share/X11/xorg.conf.d/99-fbturbo.conf"
+    mode: 0644
   become: true
 
 - name: Piticker - Remove Piwiz
@@ -172,9 +182,13 @@
 - name: Piticker - cron - autostart Chromium
   cron :
     name: "autostart chromium"
-    job: "$HOME/ktpi/venv/bin/python $HOME/ktpi/autorefresh_service.py"
+    job: "$HOME/piticker/venv/bin/python $HOME/ktpi/autorefresh_service.py"
     minute: "*"
   become: true
   become_user: "{{ ruser }}"
 
+- name: Piticker - Reboot
+  reboot:
+    reboot_timeout: 60
+  become: True
 

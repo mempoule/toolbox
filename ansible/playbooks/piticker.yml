@@ -2,9 +2,9 @@
   roles:
 #    - role: install
 #   https://github.com/mempoule/xinput_calibrator.git
-    - { role: git, git_name: "xinput_calibrator", url_repo: "https://github.com/mempoule/xinput_calibrator.git" }
-    - { role: git, git_name: "piticker", url_repo: "https://github.com/mempoule/piticker.git", private_git: true}
-#    - role: pi/ticker
+#    - { role: git, git_name: "xinput_calibrator", url_repo: "https://github.com/mempoule/xinput_calibrator.git" }
+#    - { role: git, git_name: "piticker", url_repo: "https://github.com/mempoule/piticker.git", private_git: true}
+    - role: pi/ticker
 #    - { role: iptables, ruleset: piticker }
   vars:
     ruser: mempoule
