@@ -4,13 +4,10 @@
   - app_folder is not defined
   - app_name is not defined
 
-- name: Gunicorn - {{ app_folder }} - Initiate virtualenv"
+- name: "Gunicorn - {{ app_folder }} - Initiate virtualenv"
   pip:
     requirements: "/home/{{ ruser }}/{{ app_folder }}/requirements.txt"
     virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
-
-- name: "Gunicorn - {{ app_folder }}"
-  meta: end_host
 
 - name: "Gunicorn - {{ app_folder }} - ensire nginx is installed"
   apt:
@@ -29,27 +26,6 @@
     path: /etc/nginx/sites-available/default
     state: absent
   become: True
-
-- name: "Gunicorn - {{ app_folder }} - flask install in venv"
-  pip:
-    name: flask
-    virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
-  become: true
-  become_user: "{{ ruser }}"
-
-- name: "Gunicorn - {{ app_folder }} - gunicorn install in venv"
-  pip:
-    name: gunicorn
-    virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
-  become: true
-  become_user: "{{ ruser }}"
-
-- name: "Gunicorn - {{ app_folder }} - requests install in venv"
-  pip:
-    name: requests
-    virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
-  become: true
-  become_user: "{{ ruser }}"
 
 - name: "Gunicorn - {{ app_folder }} - copy nginx_proxy.conf"
   copy:
