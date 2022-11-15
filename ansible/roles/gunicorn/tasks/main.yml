@@ -6,7 +6,7 @@
 
 - name: Gunicorn - {{ app_folder }} - Initiate virtualenv"
   pip:
-    requirements: requirements.txt
+    requirements: "/home/{{ ruser }}/{{ app_folder }}/requirements.txt"
     virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
 
 - name: "Gunicorn - {{ app_folder }}"
