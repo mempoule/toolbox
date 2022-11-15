@@ -4,7 +4,11 @@
   - app_folder is not defined
   - app_name is not defined
 
-- name: "Gunicorn - {{ app_folder }} - ensure local reverse is setup"
+- name: Gunicorn - {{ app_folder }} - Initiate virtualenv"
+  pip:
+    virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
+
+- name: "Gunicorn - {{ app_folder }} - ensire nginx is installed"
   apt:
     pkg:
     - nginx
