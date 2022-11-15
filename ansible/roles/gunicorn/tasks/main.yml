@@ -55,7 +55,7 @@
     replace: '{{ app_folder }}'
   become: true
 
-- name: "Gunicorn - {{ app_folder }} - replace app_name"
+- name: "Gunicorn - {{ app_folder }} - replace app_name nginx virtualhost"
   replace:
     path: "/etc/nginx/sites-available/{{ app_name }}"
     regexp: 'app_name'
