@@ -1,85 +1,85 @@
-- name: Gunicorn - ensure local reverse is setup
+- name: "Gunicorn - {{ app_folder }} - ensure local reverse is setup"
   apt:
     pkg:
     - nginx
   become: true
 
-- name: Gunicorn - flask install in venv
+- name: "Gunicorn - {{ app_folder }} - remove nginx default se"
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  become: True
+
+- name: "Gunicorn - {{ app_folder }} - remove nginx default sa"
+  file:
+    path: /etc/nginx/sites-available/default
+    state: absent
+  become: True
+
+- name: "Gunicorn - {{ app_folder }} - flask install in venv"
   pip:
     name: flask
     virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
   become: true
   become_user: "{{ ruser }}"
 
-- name: Gunicorn - gunicorn install in venv
+- name: "Gunicorn - {{ app_folder }} - gunicorn install in venv"
   pip:
     name: gunicorn
     virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
   become: true
   become_user: "{{ ruser }}"
 
-- name: Gunicorn - requests install in venv
+- name: "Gunicorn - {{ app_folder }} - requests install in venv"
   pip:
     name: requests
     virtualenv: "/home/{{ ruser }}/{{ app_folder }}/venv"
   become: true
   become_user: "{{ ruser }}"
 
-- name: Gunicorn - copy nginx_proxy.conf
+- name: "Gunicorn - {{ app_folder }} - copy nginx_proxy.conf"
   copy:
     src: vars/nginx_proxy.conf
     dest: "/etc/nginx/sites-available/{{ app_name }}"
     mode: 0755
   become: true
 
-- name: Gunicorn - symlink nginx se sa
+- name: "Gunicorn - {{ app_folder }} - symlink nginx se sa"
   file:
     src: "/etc/nginx/sites-available/{{ app_name }}"
     dest: "/etc/nginx/sites-enabled/{{ app_name }}"
     state: link
   become: True
 
-- name: Gunicorn - remove nginx default se
-  file:
-    path: /etc/nginx/sites-enabled/default
-    state: absent
-  become: True
-
-- name: Gunicorn - remove nginx default sa
-  file:
-    path: /etc/nginx/sites-available/default
-    state: absent
-  become: True
-
-- name: Gunicorn - replace ruser_placeholder nginx virtualhost
+- name: "Gunicorn - {{ app_folder }} - replace user_placeholder nginx virtualhost"
   replace:
     path: "/etc/nginx/sites-available/{{ app_name }}"
-    regexp: 'ruser_placeholder'
+    regexp: 'user_placeholder'
     replace: '{{ ruser }}'
   become: true
 
-- name: Gunicorn - replace rapp_folder nginx virtualhost
+- name: "Gunicorn - {{ app_folder }} - replace rapp_folder nginx virtualhost"
   replace:
     path: "/etc/nginx/sites-available/{{ app_name }}"
-    regexp: 'rapp_folder'
+    regexp: 'app_folder'
     replace: '{{ app_folder }}'
   become: true
 
-- name: Gunicorn - replace rapp_name
+- name: "Gunicorn - {{ app_folder }} - replace rapp_name"
   replace:
     path: "/etc/nginx/sites-available/{{ app_name }}"
-    regexp: 'rapp_name'
-    replace: '{{ rapp_name }}'
+    regexp: 'app_name'
+    replace: '{{ app_name }}'
   become: true
 
-- name: "PythonLibs - AUTOSERVICE - Check that /home/{{ ruser }}/{{ venv_target }}/{{ app_filename }} exists"
+- name: "Gunicorn - {{ app_folder }} - Check that /home/{{ ruser }}/{{ app_folder }}/{{ app_name }} exists"
   stat:
     path: "/home/{{ ruser }}/{{ app_folder }}/{{ app_name }}.py"
   register: app
 
-- name: "PythonLibs - Webservice - wsgi.py in {{ app_folder }}"
+- name: "Gunicorn - {{ app_folder }} - wsgi.py in {{ app_folder }}"
   copy:
-    src: "{{ lookup('env','PWD') }}/vars/webservice/wsgi.py"
+    src: vars/webservice/wsgi.py
     dest: "/home/{{ ruser }}/{{ app_folder }}"
     mode: 0644
     group: "{{ ruser }}"
@@ -87,67 +87,52 @@
   become: true
   when: app.stat.exists
 
-- name: PythonLibs - AUTOSERVICE - replace app placeholders
+- name: "Gunicorn - {{ app_folder }} - replace app placeholder"
   replace:
     path: "/home/{{ ruser }}/{{ app_folder }}/wsgi.py"
-    regexp: 'rapp_placeholder'
-    replace: '{{ app_filename }}'
+    regexp: 'app_placeholder'
+    replace: '{{ app_name }}'
   become: true
   when: app.stat.exists
 
-- name: "PythonLibs - AUTOSERVICE - Registering {{ app_filename }} service"
+- name: "Gunicorn - {{ app_folder }} - Registering {{ app_filename }} service"
   copy:
-    src: "{{ lookup('env','PWD') }}/vars/webservice/service"
-    dest: "/etc/systemd/system/{{ app_filename }}.service"
+    src: vars/webservice/service
+    dest: "/etc/systemd/system/{{ app_name }}.service"
     mode: 0644
   become: true
   when: app.stat.exists
 
 
-- name: PythonLibs - AUTOSERVICE - replace user placeholders
+- name: "Gunicorn - {{ app_folder }} - replace user placeholders"
   replace:
-    path: "/etc/systemd/system/{{ app_filename }}.service"
-    regexp: 'ruser_placeholder'
+    path: "/etc/systemd/system/{{ app_name }}.service"
+    regexp: 'user_placeholder'
     replace: '{{ ruser }}'
   become: true
   when: app.stat.exists
 
-- name: PythonLibs - AUTOSERVICE - replace venv placeholders
+- name: "Gunicorn - {{ app_folder }} - replace app_folder placeholder"
   replace:
-    path: "/etc/systemd/system/{{ app_filename }}.service"
-    regexp: 'rvenv_placeholder'
-    replace: '{{ venv_target }}'
+    path: "/etc/systemd/system/{{ app_name }}.service"
+    regexp: 'app_folder'
+    replace: '{{ app_folder }}'
   become: true
   when: app.stat.exists
 
-- name: PythonLibs - AUTOSERVICE - replace app placeholders
+- name: "Gunicorn - {{ app_folder }} - replace app placeholders"
   replace:
-    path: "/etc/systemd/system/{{ app_filename }}.service"
-    regexp: 'rapp_placeholder'
-    replace: '{{ app_filename }}'
+    path: "/etc/systemd/system/{{ app_name }}.service"
+    regexp: 'app_name'
+    replace: '{{ app_name }}'
   become: true
   when: app.stat.exists
 
-- name: "PythonLibs - AUTOSERVICE - {{ app_filename }}.service Daemon-reload"
+- name: "Gunicorn - {{ app_folder }} - {{ app_name }}.service Daemon-reload"
   systemd:
-    name: "{{ app_filename }}"
+    name: "{{ app_name }}"
     state: started
     enabled: yes
     daemon_reload: yes
   become: true
   when: app.stat.exists
-
-
-- name: Piticker - PythonLibs - requests
-  pip:
-    name: requests
-    virtualenv: "/home/{{ ruser }}/piticker/venv"
-  become: true
-  become_user: "{{ ruser }}"
-
-- name: Piticker - PythonLibs - flask
-  pip:
-    name: flask
-    virtualenv: "/home/{{ ruser }}/piticker/venv"
-  become: true
-  become_user: "{{ ruser }}"
