@@ -67,9 +67,9 @@
     path: "/home/{{ ruser }}/{{ app_folder }}/{{ app_name }}.py"
   register: app
 
-- name: "Gunicorn - {{ app_folder }} - wsgi.py in {{ app_folder }}"
+- name: "Gunicorn - {{ app_folder }} - wsgi.py - copy"
   copy:
-    src: vars/webservice/wsgi.py
+    src: vars/wsgi.py
     dest: "/home/{{ ruser }}/{{ app_folder }}"
     mode: 0644
     group: "{{ ruser }}"
@@ -77,7 +77,7 @@
   become: true
   when: app.stat.exists
 
-- name: "Gunicorn - {{ app_folder }} - replace app placeholder"
+- name: "Gunicorn - {{ app_folder }} - wsgi.py - replace app placeholder"
   replace:
     path: "/home/{{ ruser }}/{{ app_folder }}/wsgi.py"
     regexp: 'app_placeholder'
@@ -85,16 +85,16 @@
   become: true
   when: app.stat.exists
 
-- name: "Gunicorn - {{ app_folder }} - Registering {{ app_name }} service"
+- name: "Gunicorn - {{ app_folder }} - service - Registering {{ app_name }} service"
   copy:
-    src: vars/webservice/service
+    src: vars/service
     dest: "/etc/systemd/system/{{ app_name }}.service"
     mode: 0644
   become: true
   when: app.stat.exists
 
 
-- name: "Gunicorn - {{ app_folder }} - replace user placeholders"
+- name: "Gunicorn - {{ app_folder }} - service -  replace user placeholders"
   replace:
     path: "/etc/systemd/system/{{ app_name }}.service"
     regexp: 'user_placeholder'
@@ -102,7 +102,7 @@
   become: true
   when: app.stat.exists
 
-- name: "Gunicorn - {{ app_folder }} - replace app_folder placeholder"
+- name: "Gunicorn - {{ app_folder }} - service -  replace app_folder placeholder"
   replace:
     path: "/etc/systemd/system/{{ app_name }}.service"
     regexp: 'app_folder'
@@ -110,7 +110,7 @@
   become: true
   when: app.stat.exists
 
-- name: "Gunicorn - {{ app_folder }} - replace app placeholders"
+- name: "Gunicorn - {{ app_folder }} - service -  replace app placeholders"
   replace:
     path: "/etc/systemd/system/{{ app_name }}.service"
     regexp: 'app_name'
@@ -118,7 +118,7 @@
   become: true
   when: app.stat.exists
 
-- name: "Gunicorn - {{ app_folder }} - {{ app_name }}.service Daemon-reload"
+- name: "Gunicorn - {{ app_folder }} - service -  {{ app_name }}.service Daemon-reload"
   systemd:
     name: "{{ app_name }}"
     state: started

@@ -1,0 +1,17 @@
+[Unit]
+Description=app_name daemon
+After=network.target
+
+[Service]
+Type=simple
+User=user_placeholder
+Group=www-data
+WorkingDirectory=/home/user_placeholder/app_folder/
+ExecStart=/home/user_placeholder/app_folder/venv/bin/gunicorn --bind unix:app_name -m 007 --timeout 180 wsgi:app
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
