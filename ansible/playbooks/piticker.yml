@@ -3,9 +3,9 @@
 #    - role: apt
 #    - role: install
 #    - { role: git, git_name: "xinput_calibrator", url_repo: "https://github.com/mempoule/xinput_calibrator.git" }
-#    - { role: git, git_name: "piticker", url_repo: "https://github.com/mempoule/piticker.git", private_git: true}
+    - { role: git, git_name: "piticker", url_repo: "https://github.com/mempoule/piticker.git", private_git: true}
 #    - role: pi/ticker
-    - { role: gunicorn }
+    - { role: gunicorn, app_name: pitickerapp, app_folder: piticker }
 #    - { role: iptables, ruleset: piticker }
   vars:
     ruser: mempoule
