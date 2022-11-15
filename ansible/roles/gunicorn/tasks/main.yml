@@ -1,3 +1,9 @@
+- name: "Gunicorn - {{ app_folder }}"
+  meta: end_host
+  when:
+  - app_folder is defined
+  - app_name is defined
+
 - name: "Gunicorn - {{ app_folder }} - ensure local reverse is setup"
   apt:
     pkg:
@@ -58,14 +64,14 @@
     replace: '{{ ruser }}'
   become: true
 
-- name: "Gunicorn - {{ app_folder }} - replace rapp_folder nginx virtualhost"
+- name: "Gunicorn - {{ app_folder }} - replace app_folder nginx virtualhost"
   replace:
     path: "/etc/nginx/sites-available/{{ app_name }}"
     regexp: 'app_folder'
     replace: '{{ app_folder }}'
   become: true
 
-- name: "Gunicorn - {{ app_folder }} - replace rapp_name"
+- name: "Gunicorn - {{ app_folder }} - replace app_name"
   replace:
     path: "/etc/nginx/sites-available/{{ app_name }}"
     regexp: 'app_name'
@@ -95,7 +101,7 @@
   become: true
   when: app.stat.exists
 
-- name: "Gunicorn - {{ app_folder }} - Registering {{ app_filename }} service"
+- name: "Gunicorn - {{ app_folder }} - Registering {{ app_name }} service"
   copy:
     src: vars/webservice/service
     dest: "/etc/systemd/system/{{ app_name }}.service"
