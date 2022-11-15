@@ -7,3 +7,9 @@
   retries: 12
   become: true
   when: is_commander is not defined
+
+- name: "APT.upgrade - reboot"
+  reboot:
+    reboot_timeout: 300
+  become: true
+
