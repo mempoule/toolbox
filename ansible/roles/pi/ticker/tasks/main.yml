@@ -175,7 +175,7 @@
 - name: Piticker - cron - autostart Chromium
   cron :
     name: "autostart chromium"
-    job: "$HOME/piticker/venv/bin/python $HOME/ktpi/autorefresh_service.py"
+    job: "$HOME/piticker/venv/bin/python $HOME/piticker/autorefresh_service.py"
     minute: "*"
   become: true
   become_user: "{{ ruser }}"
