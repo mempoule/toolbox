@@ -1,0 +1,4 @@
+- name: Reboot Dat Srv
+  reboot:
+    reboot_timeout: 60
+  become: True
