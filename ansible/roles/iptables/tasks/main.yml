@@ -33,7 +33,7 @@
     path: /etc/iptables/rules.v4
   become: true
 
-- name: "FW_{{ action }} - Start fail2ban"
+- name: "Iptables - ruleset {{ ruleset }} - Start fail2ban"
   service:
     name: fail2ban
     state: started
