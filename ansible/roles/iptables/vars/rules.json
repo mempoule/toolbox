@@ -3,21 +3,21 @@
   [
     {
       "chain": "INPUT",
-      "source": "192.168.5.72/29",
-      "port": 8096,
+      "source": "192.168.1.100/32",
+      "port": 80,
       "protocol": "tcp",
       "jump": "ACCEPT",
       "rule_num": "1",
-      "comment": "test rule 1"
+      "comment": "http apu2 nated"
     },
     {
       "chain": "INPUT",
-      "source": "192.168.5.72/29",
-      "port": 8920,
+      "source": "192.168.1.100/32",
+      "port": 22,
       "protocol": "tcp",
       "jump": "ACCEPT",
       "rule_num": "2",
-      "comment": "test rule 2"
+      "comment": "ssh apu2 nated"
     }
   ]
 }

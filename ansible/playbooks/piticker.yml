@@ -6,7 +6,7 @@
     - { role: git, git_name: "piticker", url_repo: "https://github.com/mempoule/piticker.git", private_git: true}
     - role: pi/ticker
     - { role: gunicorn, app_name: pitickerapp, app_folder: piticker }
-#    - { role: iptables, ruleset: piticker }
+    - { role: iptables, ruleset: piticker }
     - role: reboot
   vars:
     ruser: mempoule
