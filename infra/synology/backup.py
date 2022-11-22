@@ -3,6 +3,8 @@ import requests
 import os
 import subprocess
 
+# Config panel -> Task Scheduler -> Execution details via mails
+
 OAUTH_TOKEN = ""
 BACKUP_PATH = "/volume1/homes/mempoule/gitsave"
 API_URL = f"https://api.github.com/user/repos?type=all&per_page=100"
