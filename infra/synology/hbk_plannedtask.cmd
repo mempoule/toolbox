@@ -1,0 +1,1 @@
+robocopy \\XX.XX.XX.XX\Backup_syno\ D:\OneDrive\syno /E /log+:D:\OneDrive\syno\robocopy.log
