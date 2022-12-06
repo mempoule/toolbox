@@ -96,8 +96,8 @@ for transaction in transactions['transactions']:
     category = get_attachment_folder(transaction['label'])
     note = transaction['note']
     if note is not None:
-        note = note.replace('\n', ' - ')
-    settled_balance = transaction['settled_balance']
+        note = note.replace('\n', ' - ').replace('é', 'e').replace('è', 'e').replace('ê', 'e').replace('à', 'a').replace('î', 'i').replace('ô', 'o').replace('ù', 'u').replace('û', 'u').replace('â', 'a')
+        settled_balance = transaction['settled_balance']
     if len(transaction['attachment_ids']) > 0:
         pathlib.Path(f'{attachments_dir}/{category}').mkdir(parents=True, exist_ok=True)
         for attachment_id in transaction['attachment_ids']:
