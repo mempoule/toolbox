@@ -53,7 +53,6 @@ distribution_version=$(grep 'VERSION_CODENAME=' /etc/os-release | cut -d "=" -f2
 
 echo "$TIMESTAMP - START - sources.list update" | tee -a $LOGFILE
 
-proxmox_version=$(cat /etc/os-release | grep VERSION_CODENAME | cut -d "=" -f2)
 sed -i 's/^[:alnum]/# /' /etc/apt/sources.list.d/pve-enterprise.list
 
 if [[ $(grep -c download.proxmox.com /etc/apt/sources.list) -eq 0 ]]
@@ -62,7 +61,7 @@ then
   {
     echo -e "\n# PVE pve-no-subscription repository provided by proxmox.com,"
     echo "# NOT recommended for production use" >> /etc/apt/sources.list
-    echo "deb http://download.proxmox.com/debian/pve ${proxmox_version} pve-no-subscription"
+    echo "deb http://download.proxmox.com/debian/pve ${distribution_version} pve-no-subscription"
   } >> /etc/apt/sources.list
 else
   echo "nosubscription pve sources.list already present for ${distribution_version}"
