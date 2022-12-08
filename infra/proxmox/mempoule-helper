@@ -10,13 +10,13 @@ else
       echo "  OVH installation Softraid Bypassed informative commands "
       echo -e "#############################################################\n"
       echo -e "loc_mapper_name:\n  df -h | grep mapper | cut -d ' ' -f1\n"
-      echo -e "loc_vg_name:\n  /sbin/pvs --separator \",\" | grep dev | xargs | cut -d \",\" -f2\n"
+      echo -e "loc_vg_name:\n  sudo pvs --separator \",\" | grep dev | xargs | cut -d \",\" -f2\n"
       echo -e "disk/part list :\n  lsblk | grep -v '^loop'\n"
       echo -e "Commands : \n"
-      echo "/sbin/wipefs /dev/{loc_unused_disk}"
-      echo "/sbin/pvcreate /dev/{loc_unused_disk} -f"
-      echo "/sbin/vgextend {loc_vg_name} /dev/{loc_unused_disk}"
-      echo "/sbin/lvresize --extents +100%FREE --resizefs {loc_mapper_name}"
+      echo "sudo wipefs /dev/{loc_unused_disk}"
+      echo "sudo pvcreate /dev/{loc_unused_disk} -f"
+      echo "sudo vgextend {loc_vg_name} /dev/{loc_unused_disk}"
+      echo "sudo lvresize --extents +100%FREE --resizefs {loc_mapper_name}"
       echo -e "\n#############################################################\n"
     ;;
     "acme")
