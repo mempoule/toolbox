@@ -34,6 +34,7 @@ fi
 
 priviledged_user="mempoule"
 github_name="mempoule"
+password="admin"
 
 ssh_client=$(who am i|cut -d"(" -f2 |cut -d")" -f1)
 if [[ $(pvesm status | grep -c zfs) -eq 1 ]]
@@ -101,26 +102,13 @@ echo "$TIMESTAMP - START - new user" | tee -a $LOGFILE
 if [[ ! -d /home/${priviledged_user} ]]
 then
   echo -e "User : ${priviledged_user} non-existent, creating...\n"
-  echo "Enter password for new user ${priviledged_user}: "
-  read -sr password
-  if [[ ! ${password} =~ " " ]]
-  then
-    pass=$(perl -e 'print crypt($ARGV[0], "password")' "${password}")
-    useradd -m -p "${pass}" ${priviledged_user} --shell /bin/bash
-    echo "${priviledged_user} successfully created "
-  else
-    echo "Must provide a valid user / password, exiting"
-    exit
-  fi
+  echo "Default password for user ${priviledged_user} is set to : ${password}"
+  echo "MANDATORY ! Change it after execution of this script"
+  pass=$(perl -e 'print crypt($ARGV[0], "password")' "${password}")
+  useradd -m -p "${pass}" ${priviledged_user} --shell /bin/bash
+  echo "${priviledged_user} successfully created "
 else
   echo "$TIMESTAMP - INFO  - ${priviledged_user} already created" | tee -a $LOGFILE
-  echo -e "\n\nEnter password of existing user ${priviledged_user} (for VM templates): "
-  read -sr password
-  if [[ ${password} =~ " " ]] || [[ ${password} == "" ]]
-  then
-    echo "Must provide a valid password, exiting"
-    exit
-  fi
 fi
 usermod -aG sudo ${priviledged_user}
 # Prereq for nicreporting alias
