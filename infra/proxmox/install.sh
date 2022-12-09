@@ -444,7 +444,7 @@ then
 else
   qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
   qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &>/dev/null
-  disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
+  disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_templammemte_ver}-.*.raw.*" | cut -d " " -f1)
   qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
   qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
   qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
@@ -478,7 +478,7 @@ then
   echo "$TIMESTAMP - INFO - ${distrib_name} ${distrib_template_ver} cloudimage exists, skipped" | tee -a $LOGFILE
 else
   qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
-  qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} --format qcow2 &>/dev/null
+  qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &>/dev/null
   disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
   qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
   qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
