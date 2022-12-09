@@ -572,10 +572,11 @@ echo "$TIMESTAMP - START - swap disable if is_zfs=1" | tee -a $LOGFILE
 
 if [[ ${is_zfs} -eq 1 ]]
 then
-  echo "vm.swappiness = 0" >> /etc/sysctl.conf
+  grep -qxF 'vm.swappiness = 0' /etc/sysctl.conf || echo 'vm.swappiness = 0' >> /etc/sysctl.conf
   sed -i '/swap/ s/^#*/# /' /etc/fstab
 else
   echo "vm.swappiness = 10" >> /etc/sysctl.conf
+  grep -qxF 'vm.swappiness = 10' /etc/sysctl.conf || echo 'vm.swappiness = 10' >> /etc/sysctl.conf
 fi
 sysctl -p
 
