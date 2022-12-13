@@ -335,7 +335,7 @@ echo "$TIMESTAMP - START - VMBR autocreate" | tee -a $LOGFILE
 
 if [[ $(grep -c "vmbr100" /etc/network/interfaces) -eq 0 ]]
 then
-  echo "YAPA 100"
+  echo "$TIMESTAMP - DO    - VMBR 100 autocreate" | tee -a $LOGFILE
   {
     echo -e "\nauto vmbr100"
     echo "iface vmbr100 inet manual"
@@ -351,7 +351,7 @@ for vmbr_id in {0..5}
 do
   if [[ $(grep -c "vmbr${vmbr_id}" /etc/network/interfaces) -eq 0 ]]
   then
-    echo "YAPA ${vmbr_id}"
+    echo "$TIMESTAMP - DO    - VMBR ${vmbr_id} autocreate" | tee -a $LOGFILE
     {
       echo -e "\nauto vmbr${vmbr_id}"
       echo "iface vmbr${vmbr_id} inet manual"
@@ -365,7 +365,7 @@ do
 
   if [[ $(grep -c "vmbr1${vmbr_id}" /etc/network/interfaces) -eq 0 ]]
   then
-    echo "$TIMESTAMP - STOP  - VMBR 1${vmbr_id} autocreate" | tee -a $LOGFILE
+    echo "$TIMESTAMP - DO    - VMBR 1${vmbr_id} autocreate" | tee -a $LOGFILE
     {
       echo -e "\nauto vmbr1${vmbr_id}"
       echo "iface vmbr1${vmbr_id} inet manual"
