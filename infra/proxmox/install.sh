@@ -308,7 +308,6 @@ if  [[ ! -f /var/lib/vz/template/iso/pfSense-CE-2.6.0-RELEASE-amd64.iso ]]
 then
   wget -N https://frafiles.netgate.com/mirror/downloads/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz -P /var/lib/vz/template/iso/
   gunzip -f /var/lib/vz/template/iso/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz
-  rm /var/lib/vz/template/iso/pfSense-CE-2.6.0-RELEASE-amd64.iso.gz
 fi
 
 echo "$TIMESTAMP - DONE - Basic ISO get" | tee -a $LOGFILE
@@ -444,7 +443,7 @@ then
 else
   qm create ${distrib_template_prefix}${distrib_template_ver} --memory 2048 --name ubuntu-cloud-${distrib_template_ver} --net0 virtio,bridge=vmbr100
   qm importdisk ${distrib_template_prefix}${distrib_template_ver} /var/lib/vz/template/iso/${cloudimg_name} ${local_storage} &>/dev/null
-  disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_templammemte_ver}-.*.raw.*" | cut -d " " -f1)
+  disk_location=$(pvesm list ${local_storage} | grep "^${local_storage}.*.-${distrib_template_prefix}${distrib_template_ver}-.*.raw.*" | cut -d " " -f1)
   qm set ${distrib_template_prefix}${distrib_template_ver} --scsihw virtio-scsi-pci --scsi0 ${disk_location}
   qm set ${distrib_template_prefix}${distrib_template_ver} --ide2 local:cloudinit
   qm set ${distrib_template_prefix}${distrib_template_ver} --boot c --bootdisk scsi0
@@ -509,7 +508,7 @@ then
   echo "$TIMESTAMP - INFO - vm 100 already exists, skipped" | tee -a $LOGFILE
 else
   qm create 100 --memory 1024 --name pfSense --net0 virtio,bridge=vmbr0 --net1 virtio,bridge=vmbr1 --net2 virtio,bridge=vmbr2 --net3 virtio,bridge=vmbr3 --net4 virtio,bridge=vmbr4 --net5 virtio,bridge=vmbr5 --net10 virtio,bridge=vmbr10 --net11 virtio,bridge=vmbr11 --net12 virtio,bridge=vmbr12 --net13 virtio,bridge=vmbr13 --net14 virtio,bridge=vmbr14 --net15 virtio,bridge=vmbr15
-  qm set 100 --scsihw virtio-scsi-pci --virtio0 local-zfs:20
+  qm set 100 --scsihw virtio-scsi-pci --virtio0 ${local_storage}:20
   qm set 100 --ide2 local:iso/pfSense-CE-2.6.0-RELEASE-amd64.iso,media=cdrom
   qm set 100 --onboot 1
   qm set 100 --startup order=1
@@ -531,7 +530,7 @@ then
   echo "$TIMESTAMP - INFO - Ubuntu 18 cloudimage exists, skipped" | tee -a $LOGFILE
 else
   qm create 101 --memory 2048 --name mempoule-trashgui --net0 virtio,bridge=vmbr10
-  qm set 101 --scsihw virtio-scsi-pci --virtio0 local-zfs:20
+  qm set 101 --scsihw virtio-scsi-pci --virtio0 ${local_storage}:20
   qm set 101 --ide2 local:iso/ubuntu-22.10-desktop-amd64.iso,media=cdrom
   qm set 101 --onboot 1
   qm set 101 --startup order=1
