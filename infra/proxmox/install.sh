@@ -333,7 +333,21 @@ echo "$TIMESTAMP - DONE - Basic ISO get" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - VMBR autocreate" | tee -a $LOGFILE
 
-for vmbr_id in {1..5}
+if [[ $(grep -c "vmbr100" /etc/network/interfaces) -eq 0 ]]
+then
+  echo "YAPA 100"
+  {
+    echo -e "\nauto vmbr100"
+    echo "iface vmbr100 inet manual"
+    echo "      bridge-ports none"
+    echo "      bridge-stp off"
+    echo "      bridge-fd 0"
+    ifup "vmbr100"
+    sleep 1
+  } >> /etc/network/interfaces
+fi
+
+for vmbr_id in {0..5}
 do
   if [[ $(grep -c "vmbr${vmbr_id}" /etc/network/interfaces) -eq 0 ]]
   then
