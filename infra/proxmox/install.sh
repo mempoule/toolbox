@@ -333,7 +333,7 @@ echo "$TIMESTAMP - DONE - Basic ISO get" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - VMBR autocreate" | tee -a $LOGFILE
 
-if [[ $(grep -c "vmbr100" /etc/network/interfaces) -eq 0 ]]
+if [[ $(grep -c "vmbr100 " /etc/network/interfaces) -eq 0 ]]
 then
   echo "$TIMESTAMP - INFO  - VMBR 100 autocreate" | tee -a $LOGFILE
   {
@@ -349,7 +349,7 @@ fi
 
 for vmbr_id in {0..5}
 do
-  if [[ $(grep -c "vmbr${vmbr_id}" /etc/network/interfaces) -eq 0 ]]
+  if [[ $(grep -c "vmbr${vmbr_id} " /etc/network/interfaces) -eq 0 ]]
   then
     echo "$TIMESTAMP - INFO  - VMBR ${vmbr_id} autocreate" | tee -a $LOGFILE
     {
@@ -363,7 +363,7 @@ do
     } >> /etc/network/interfaces
   fi
 
-  if [[ $(grep -c "vmbr1${vmbr_id}" /etc/network/interfaces) -eq 0 ]]
+  if [[ $(grep -c "vmbr1${vmbr_id} " /etc/network/interfaces) -eq 0 ]]
   then
     echo "$TIMESTAMP - INFO  - VMBR 1${vmbr_id} autocreate" | tee -a $LOGFILE
     {
