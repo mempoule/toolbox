@@ -56,7 +56,21 @@ echo "$TIMESTAMP - START - sources.list update" | tee -a $LOGFILE
 
 sed -i 's/^[:alnum]/# /' /etc/apt/sources.list.d/pve-enterprise.list
 
-if [[ $(grep -c download.proxmox.com /etc/apt/sources.list) -eq 0 ]]
+pve_ok=0
+
+if [[ -f "/etc/apt/sources.list.d/pve-install-repo.list" ]]
+then
+  if [[ $(grep -c download.proxmox.com /etc/apt/sources.list.d/pve-install-repo.list) -eq 1 ]]
+  then
+    pve_ok=1
+  fi
+fi
+if [[ $(grep -c download.proxmox.com /etc/apt/sources.list) -eq 1 ]]
+then
+  pve_ok=1
+fi
+
+if [[ ${pve_ok} -eq 0 ]]
 then
   echo "Adding nosubscription pve sources.list for ${distribution_version}"
   {
@@ -89,7 +103,7 @@ echo "$TIMESTAMP - DONE  - update packages list" | tee -a $LOGFILE
 
 echo "$TIMESTAMP - START - install new packages" | tee -a $LOGFILE
 
-apt-get install curl unzip wget fail2ban htop sudo vim ifupdown2 net-tools conntrack tree screen qrencode msmtp mutt -y &> /dev/null
+apt-get install curl unzip wget fail2ban htop sudo vim ifupdown2 net-tools conntrack tree screen qrencode msmtp mutt jq -y &> /dev/null
 
 echo "$TIMESTAMP - DONE  - install new packages" | tee -a $LOGFILE
 
