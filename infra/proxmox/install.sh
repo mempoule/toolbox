@@ -203,6 +203,7 @@ rm /root/.vimrc 2>/dev/null
   echo "set nocompatible"
   echo "set mouse-=a"
   echo "syntax on"
+  echo "hi Comment ctermfg=darkgreen"
 } >> /root/.vimrc
 
 rm /home/${priviledged_user}/.vimrc 2>/dev/null
@@ -210,9 +211,31 @@ rm /home/${priviledged_user}/.vimrc 2>/dev/null
   echo "set nocompatible"
   echo "set mouse-=a"
   echo "syntax on"
+  echo "hi Comment ctermfg=darkgreen"
 } >> /home/${priviledged_user}/.vimrc
 
 echo "$TIMESTAMP - DONE  - vimrc tweaks" | tee -a $LOGFILE
+
+########################################################################
+#     nanorc
+########################################################################
+
+echo "$TIMESTAMP - START - nano tweaks" | tee -a $LOGFILE
+
+rm /root/.nanorc 2>/dev/null
+{
+  echo 'include "/usr/share/nano/*.nanorc"'
+  echo 'set linenumbers'
+} >> /root/.nanorc
+
+rm /home/${priviledged_user}/.nanorc 2>/dev/null
+{
+  echo 'include "/usr/share/nano/*.nanorc"'
+  echo 'set linenumbers'
+} >> /home/${priviledged_user}/.nanorc
+
+echo "$TIMESTAMP - DONE  - nanorc tweaks" | tee -a $LOGFILE
+
 
 
 ########################################################################
@@ -622,3 +645,10 @@ then
 fi
 
 echo "$TIMESTAMP - DONE - Cleaning install temp files" | tee -a $LOGFILE
+
+
+########################################################################
+#     Reboot
+########################################################################
+
+echo "$TIMESTAMP - START - Reboot" | tee -a $LOGFILE
