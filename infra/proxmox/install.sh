@@ -651,4 +651,6 @@ echo "$TIMESTAMP - DONE - Cleaning install temp files" | tee -a $LOGFILE
 #     Reboot
 ########################################################################
 
+reboot
+
 echo "$TIMESTAMP - START - Reboot" | tee -a $LOGFILE
